@@ -60,6 +60,8 @@ func contextHandler(ctx context.Context, w http.ResponseWriter, r *http.Request)
 		return processIssuesEvent(ctx, event)
 	case *github.PullRequestEvent:
 		return processPullRequestEvent(ctx, event)
+	case *github.StatusEvent:
+		return processStatusEvent(ctx, event)
 	default:
 		log.Debugf(ctx, "unimplemented event type: %T", event)
 	}
