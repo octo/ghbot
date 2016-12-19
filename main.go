@@ -56,6 +56,8 @@ func contextHandler(ctx context.Context, w http.ResponseWriter, r *http.Request)
 	switch event := event.(type) {
 	case *github.IssueCommentEvent:
 		return processIssueCommentEvent(ctx, event)
+	case *github.IssuesEvent:
+		return processIssuesEvent(ctx, event)
 	case *github.PullRequestEvent:
 		return processPullRequestEvent(ctx, event)
 	default:
