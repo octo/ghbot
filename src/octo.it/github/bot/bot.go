@@ -1,15 +1,16 @@
-package ghbot
+package bot
 
 import (
 	"fmt"
 	"net/http"
 
+	"github.com/google/go-github/github"
 	"golang.org/x/net/context"
-
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/log"
+	"octo.it/github/event"
 
-	"github.com/google/go-github/github"
+	_ "octo.it/github/actions/automerge"
 )
 
 var secretKey = []byte("@SECRET@")
@@ -27,12 +28,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := contextHandler(ctx, w, r); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Errorf(ctx, "contextHandler: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	w.WriteHeader(http.StatusNoContent)
 }
 
 func contextHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -47,25 +46,18 @@ func contextHandler(ctx context.Context, w http.ResponseWriter, r *http.Request)
 		return processPing(ctx, w)
 	}
 
-	event, err := github.ParseWebHook(whType, payload)
+	e, err := github.ParseWebHook(whType, payload)
 	if err != nil {
 		httpStatusUnprocessableEntity := 422
 		http.Error(w, err.Error(), httpStatusUnprocessableEntity)
 		return nil
 	}
-	switch event := event.(type) {
-	case *github.IssueCommentEvent:
-		return processIssueCommentEvent(ctx, event)
-	case *github.IssuesEvent:
-		return processIssuesEvent(ctx, event)
-	case *github.PullRequestEvent:
-		return processPullRequestEvent(ctx, event)
-	case *github.StatusEvent:
-		return processStatusEvent(ctx, event)
-	default:
-		log.Debugf(ctx, "unimplemented event type: %T", event)
+
+	if err := event.Handle(ctx, e); err != nil {
+		return err
 	}
 
+	w.WriteHeader(http.StatusNoContent)
 	return nil
 }
 
