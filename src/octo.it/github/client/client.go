@@ -1,13 +1,11 @@
 package client
 
 import (
-	"net/http"
+	"context"
 	"os"
 
 	"github.com/google/go-github/github"
-	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
-	"google.golang.org/appengine/urlfetch"
 )
 
 const (
@@ -28,14 +26,8 @@ func New(ctx context.Context, owner, repo string) *Client {
 	return &Client{
 		owner: owner,
 		repo:  repo,
-		Client: github.NewClient(&http.Client{
-			Transport: &oauth2.Transport{
-				Source: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken}),
-				Base: &urlfetch.Transport{
-					Context: ctx,
-				},
-			},
-		}),
+		Client: github.NewClient(oauth2.NewClient(ctx,
+			oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken}))),
 	}
 }
 

@@ -1,9 +1,10 @@
 package automerge
 
 import (
+	"context"
+	"log"
+
 	"github.com/google/go-github/github"
-	"golang.org/x/net/context"
-	"google.golang.org/appengine/log"
 	"octo.it/github/client"
 	"octo.it/github/event"
 )
@@ -32,7 +33,7 @@ func processStatusEvent(ctx context.Context, event *github.StatusEvent) error {
 
 	pr, err := c.PullRequestBySHA(*event.SHA)
 	if err != nil {
-		log.Errorf(ctx, "PullRequestBySHA(%q) = %v", *event.SHA, err)
+		log.Printf("PullRequestBySHA(%q) = %v", *event.SHA, err)
 		return nil
 	}
 
@@ -40,6 +41,6 @@ func processStatusEvent(ctx context.Context, event *github.StatusEvent) error {
 }
 
 func automerge(ctx context.Context, pr *github.PullRequest) error {
-	log.Infof(ctx, "automerge(%v)", pr)
+	log.Printf("automerge(%v)", pr)
 	return nil
 }

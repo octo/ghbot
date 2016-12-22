@@ -3,9 +3,10 @@
 package event // import "octo.it/github/event"
 
 import (
+	"context"
+	"log"
+
 	"github.com/google/go-github/github"
-	"golang.org/x/net/context"
-	"google.golang.org/appengine/log"
 )
 
 // Handle handles a webhook event.
@@ -60,7 +61,7 @@ func Handle(ctx context.Context, event interface{}) error {
 	case *github.WatchEvent:
 		return handleWatch(ctx, event)
 	default:
-		log.Debugf(ctx, "unimplemented event type: %T", event)
+		log.Printf("unimplemented event type: %T", event)
 	}
 
 	return nil

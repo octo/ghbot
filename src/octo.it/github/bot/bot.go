@@ -1,13 +1,12 @@
-package bot
+package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/google/go-github/github"
-	"golang.org/x/net/context"
-	"google.golang.org/appengine"
-	"google.golang.org/appengine/log"
 	"octo.it/github/event"
 
 	_ "octo.it/github/actions/automerge"
@@ -15,12 +14,14 @@ import (
 
 var secretKey = []byte("@SECRET@")
 
-func init() {
+func main() {
 	http.HandleFunc("/", handler)
+
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	ctx := appengine.NewContext(r)
+	ctx := r.Context()
 
 	if r.Method != "POST" {
 		http.Redirect(w, r, "https://github.com/collectd/collectd/", http.StatusFound)
@@ -28,7 +29,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := contextHandler(ctx, w, r); err != nil {
-		log.Errorf(ctx, "contextHandler: %v", err)
+		log.Printf("contextHandler: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -62,7 +63,7 @@ func contextHandler(ctx context.Context, w http.ResponseWriter, r *http.Request)
 }
 
 func processPing(ctx context.Context, w http.ResponseWriter) error {
-	log.Infof(ctx, "received ping")
+	log.Printf("received ping")
 	fmt.Fprintln(w, "pong")
 	return nil
 }
