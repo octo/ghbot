@@ -31,7 +31,26 @@ func New(ctx context.Context, owner, repo string) *Client {
 	}
 }
 
-func (c *Client) PullRequestBySHA(sha string) (*github.PullRequest, error) {
+func (c *Client) Issue(number int) (*Issue, error) {
+	issue, _, err := c.Client.Issues.Get(c.owner, c.repo, number)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Issue{
+		client: c,
+		Issue:  issue,
+	}, nil
+}
+
+func (c *Client) WrapIssue(issue *github.Issue) *Issue {
+	return &Issue{
+		client: c,
+		Issue:  issue,
+	}
+}
+
+func (c *Client) PullRequestBySHA(sha string) (*PR, error) {
 	opts := github.PullRequestListOptions{}
 
 	for {
@@ -42,7 +61,7 @@ func (c *Client) PullRequestBySHA(sha string) (*github.PullRequest, error) {
 
 		for _, pr := range prs {
 			if *pr.Head.SHA == sha {
-				return pr, nil
+				return c.WrapPR(pr), nil
 			}
 		}
 
@@ -53,4 +72,11 @@ func (c *Client) PullRequestBySHA(sha string) (*github.PullRequest, error) {
 	}
 
 	return nil, os.ErrNotExist
+}
+
+func (c *Client) WrapPR(pr *github.PullRequest) *PR {
+	return &PR{
+		client:      c,
+		PullRequest: pr,
+	}
 }
