@@ -29,7 +29,7 @@ func processStatusEvent(ctx context.Context, event *github.StatusEvent) error {
 
 	c := client.New(ctx, client.DefaultOwner, client.DefaultRepo)
 
-	pr, err := c.PullRequestBySHA(*event.SHA)
+	pr, err := c.PullRequestBySHA(ctx, *event.SHA)
 	if err != nil {
 		log.Printf("PullRequestBySHA(%q) = %v", *event.SHA, err)
 		return nil
@@ -48,7 +48,7 @@ func process(ctx context.Context, pr *client.PR) error {
 		return nil
 	}
 
-	status, err := pr.CombinedStatus()
+	status, err := pr.CombinedStatus(ctx)
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func process(ctx context.Context, pr *client.PR) error {
 		return nil
 	}
 
-	ok, err := pr.Mergeable()
+	ok, err := pr.Mergeable(ctx)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func process(ctx context.Context, pr *client.PR) error {
 		return nil
 	}
 
-	issue, err := pr.Issue()
+	issue, err := pr.Issue(ctx)
 	if err != nil {
 		return err
 	}
@@ -90,5 +90,5 @@ func process(ctx context.Context, pr *client.PR) error {
 
 	title := fmt.Sprintf("Auto-Merge pull request %v from %s/%s", pr, *pr.Head.User.Login, *pr.Head.Ref)
 	msg := fmt.Sprintf("Automatically merged due to %q label", automergeLabel)
-	return pr.Merge(title, msg)
+	return pr.Merge(ctx, title, msg)
 }

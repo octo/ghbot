@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -25,11 +26,11 @@ func (pr *PR) String() string {
 }
 
 // Mergeable returns true if the pull request can be merged without conflicts.
-func (pr *PR) Mergeable() (bool, error) {
+func (pr *PR) Mergeable(ctx context.Context) (bool, error) {
 	if pr.PullRequest.Mergeable == nil {
 		// the "Mergeable" field is not always populated, e.g. by the
 		// List() call, so retrieve the PR information again …
-		fullPR, _, err := pr.client.PullRequests.Get(pr.client.owner, pr.client.repo, pr.Number())
+		fullPR, _, err := pr.client.PullRequests.Get(ctx, pr.client.owner, pr.client.repo, pr.Number())
 		if err != nil {
 			return false, err
 		}
@@ -45,13 +46,13 @@ func (pr *PR) Mergeable() (bool, error) {
 }
 
 // Merge merges the pull request.
-func (pr *PR) Merge(title, msg string) error {
+func (pr *PR) Merge(ctx context.Context, title, msg string) error {
 	opts := &github.PullRequestOptions{
 		CommitTitle: title,
 		MergeMethod: "merge",
 	}
 
-	res, _, err := pr.client.PullRequests.Merge(pr.client.owner, pr.client.repo, pr.Number(), msg, opts)
+	res, _, err := pr.client.PullRequests.Merge(ctx, pr.client.owner, pr.client.repo, pr.Number(), msg, opts)
 	if err != nil {
 		return err
 	}
@@ -65,11 +66,11 @@ func (pr *PR) Merge(title, msg string) error {
 }
 
 // CombinedStatus ...
-func (pr *PR) CombinedStatus() (*github.CombinedStatus, error) {
-	status, _, err := pr.client.Repositories.GetCombinedStatus(pr.client.owner, pr.client.repo, *pr.Head.SHA, &github.ListOptions{})
+func (pr *PR) CombinedStatus(ctx context.Context) (*github.CombinedStatus, error) {
+	status, _, err := pr.client.Repositories.GetCombinedStatus(ctx, pr.client.owner, pr.client.repo, *pr.Head.SHA, &github.ListOptions{})
 	return status, err
 }
 
-func (pr *PR) Issue() (*Issue, error) {
-	return pr.client.Issue(pr.Number())
+func (pr *PR) Issue(ctx context.Context) (*Issue, error) {
+	return pr.client.Issue(ctx, pr.Number())
 }

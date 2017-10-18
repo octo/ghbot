@@ -31,8 +31,8 @@ func New(ctx context.Context, owner, repo string) *Client {
 	}
 }
 
-func (c *Client) Issue(number int) (*Issue, error) {
-	issue, _, err := c.Client.Issues.Get(c.owner, c.repo, number)
+func (c *Client) Issue(ctx context.Context, number int) (*Issue, error) {
+	issue, _, err := c.Client.Issues.Get(ctx, c.owner, c.repo, number)
 	if err != nil {
 		return nil, err
 	}
@@ -50,11 +50,11 @@ func (c *Client) WrapIssue(issue *github.Issue) *Issue {
 	}
 }
 
-func (c *Client) PullRequestBySHA(sha string) (*PR, error) {
+func (c *Client) PullRequestBySHA(ctx context.Context, sha string) (*PR, error) {
 	opts := github.PullRequestListOptions{}
 
 	for {
-		prs, res, err := c.PullRequests.List(c.owner, c.repo, &opts)
+		prs, res, err := c.PullRequests.List(ctx, c.owner, c.repo, &opts)
 		if err != nil {
 			return nil, err
 		}
