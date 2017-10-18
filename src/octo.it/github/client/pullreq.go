@@ -74,3 +74,52 @@ func (pr *PR) CombinedStatus(ctx context.Context) (*github.CombinedStatus, error
 func (pr *PR) Issue(ctx context.Context) (*Issue, error) {
 	return pr.client.Issue(ctx, pr.Number())
 }
+
+type PRFile struct {
+	Filename string
+	SHA      string
+}
+
+// Files returns the files that are added or modified by this PR. Files without
+// SHA (deleted files) are not returned.
+func (pr *PR) Files(ctx context.Context) ([]PRFile, error) {
+	opts := &github.ListOptions{}
+
+	var ret []PRFile
+	for {
+		files, res, err := pr.client.PullRequests.ListFiles(ctx, pr.client.owner, pr.client.repo, pr.Number(), opts)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, f := range files {
+			if f.SHA == nil {
+				continue
+			}
+
+			ret = append(ret, PRFile{
+				Filename: f.GetFilename(),
+				SHA:      f.GetSHA(),
+			})
+		}
+
+		if res.NextPage == 0 {
+			break
+		}
+
+		opts.Page = res.NextPage
+	}
+
+	return ret, nil
+}
+
+func (pr *PR) Blob(ctx context.Context, sha string) (string, error) {
+	repo := pr.PullRequest.Head.Repo
+
+	b, _, err := pr.client.Git.GetBlob(ctx, repo.Owner.GetLogin(), repo.GetName(), sha)
+	if err != nil {
+		return "", err
+	}
+
+	return b.GetContent(), nil
+}
