@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"log"
@@ -121,5 +122,10 @@ func (pr *PR) Blob(ctx context.Context, sha string) (string, error) {
 		return "", err
 	}
 
-	return b.GetContent(), nil
+	c, err := base64.StdEncoding.DecodeString(b.GetContent())
+	if err != nil {
+		return "", err
+	}
+
+	return string(c), nil
 }
