@@ -3,8 +3,10 @@ package format
 import (
 	"bytes"
 	"context"
-	"log"
+	"fmt"
 	"os/exec"
+	"sort"
+	"strings"
 
 	"github.com/google/go-github/github"
 	"octo.it/github/client"
@@ -13,11 +15,21 @@ import (
 
 const (
 	checkName   = "clang-format"
-	checkScript = "/opt/github-bot/bin/check_formatting.sh"
+	clangFormat = "/usr/bin/clang-format"
 )
 
 func init() {
 	event.PullRequestHandler(processPullRequestEvent)
+}
+
+func hasAnySuffix(s string, suffixes []string) bool {
+	for _, suffix := range suffixes {
+		if strings.HasSuffix(s, suffix) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) error {
@@ -26,31 +38,78 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 	}
 
 	c := client.New(ctx, client.DefaultOwner, client.DefaultRepo)
+	pr := c.WrapPR(e.PullRequest)
 
-	ref := e.PullRequest.Head.GetSHA()
+	ref := pr.Head.GetSHA()
 	if err := c.CreateStatus(ctx, checkName, client.StatusPending, "Checking formatting ...", ref); err != nil {
 		return err
 	}
 
-	// url := e.PullRequest.Repository.GitURL()
-	owner := e.PullRequest.Head.Repo.Owner.GetLogin()
-	repo := e.PullRequest.Head.Repo.GetName()
-	branch := e.PullRequest.Head.GetRef()
-	base := e.PullRequest.Base.GetRef()
-
-	cmd := exec.CommandContext(ctx, checkScript, owner, repo, branch, base)
-	cmd.Stdout = &bytes.Buffer{}
-	cmd.Stderr = &bytes.Buffer{}
-
-	err := cmd.Run()
-	if err == nil {
-		return c.CreateStatus(ctx, checkName, client.StatusSuccess, "All files formatted correctly", ref)
+	handleError := func(err error) error {
+		msg := fmt.Sprintf("clang-format failed: %v", err)
+		c.CreateStatus(ctx, checkName, client.StatusError, msg, ref)
+		return err
 	}
 
-	if _, ok := err.(*exec.ExitError); ok {
-		log.Printf("check_formatting.sh failed: %v\n%q", err, cmd.Stdout.(*bytes.Buffer).String())
-		return c.CreateStatus(ctx, checkName, client.StatusFailure, "Please run clang-format on all modified files", ref)
+	files, err := pr.Files(ctx)
+	if err != nil {
+		return err
 	}
 
-	return c.CreateStatus(ctx, checkName, client.StatusError, err.Error(), ref)
+	var total int
+	var needFormatting []string
+	for _, f := range files {
+		if !hasAnySuffix(f.Filename, []string{".c", ".h", ".proto"}) {
+			continue
+		}
+
+		content, err := pr.Blob(ctx, f.SHA)
+		if err != nil {
+			return handleError(err)
+		}
+
+		ok, err := checkFormat(ctx, content)
+		if err != nil {
+			return handleError(err)
+		}
+
+		if !ok {
+			needFormatting = append(needFormatting, f.Filename)
+		}
+		total++
+	}
+
+	if total == 0 {
+		return c.CreateStatus(ctx, checkName, client.StatusSuccess, "No matching files", ref)
+	}
+
+	if len(needFormatting) != 0 {
+		sort.Strings(needFormatting)
+		msg := "Please fix formatting: clang-format -style=file -i " + strings.Join(needFormatting, " ")
+		return c.CreateStatus(ctx, checkName, client.StatusFailure, msg, ref)
+	}
+
+	// all files are well formatted
+	msg := "File is correctly formatted"
+	if total != 1 {
+		msg = fmt.Sprintf("%d files are correctly formatted", total)
+	}
+	return c.CreateStatus(ctx, checkName, client.StatusSuccess, msg, ref)
+}
+
+func checkFormat(ctx context.Context, in string) (bool, error) {
+	cmd := exec.CommandContext(ctx, clangFormat, "-style=LLVM")
+	cmd.Stdin = strings.NewReader(in)
+
+	out := &bytes.Buffer{}
+	cmd.Stdout = out
+
+	errbuf := &bytes.Buffer{}
+	cmd.Stderr = errbuf
+
+	if err := cmd.Run(); err != nil {
+		return false, fmt.Errorf("clang-format: %v\nSTDERR: %s", err, errbuf)
+	}
+
+	return in == out.String(), nil
 }
