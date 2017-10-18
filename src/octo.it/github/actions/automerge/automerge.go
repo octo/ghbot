@@ -12,6 +12,12 @@ import (
 
 const automergeLabel = "Automerge"
 
+// requiredChecks is a list of all status "contexts" that must signal success
+// before a PR can automatically be merged.
+var requiredChecks = []string{
+	"pull-requests-github_trigger-aggregation",
+}
+
 func init() {
 	event.PullRequestHandler(processPullRequestEvent)
 	event.StatusHandler(processStatusEvent)
@@ -40,7 +46,8 @@ func processStatusEvent(ctx context.Context, event *github.StatusEvent) error {
 
 // process merges a pull request, if:
 // * Is has not already been merged.
-// * All three builders signal success.
+// * All required checks have succeeded.
+// * The overall state is "success".
 // * There are no merge conflicts.
 // * Is has the Automerge label.
 func process(ctx context.Context, pr *client.PR) error {
@@ -53,9 +60,15 @@ func process(ctx context.Context, pr *client.PR) error {
 		return err
 	}
 
-	// TODO(octo): find a better way to configure expected status entries.
-	if len(status.Statuses) < 3 {
-		return nil
+	success := map[string]bool{}
+	for _, s := range status.Statuses {
+		success[s.GetContext()] = (s.GetState() == "success")
+	}
+
+	for _, req := range requiredChecks {
+		if !success[req] {
+			return nil
+		}
 	}
 
 	if status.State == nil {
