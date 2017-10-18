@@ -11,7 +11,10 @@ import (
 	"octo.it/github/event"
 )
 
-const checkName = "clang-format"
+const (
+	checkName   = "clang-format"
+	checkScript = "/opt/github-bot/bin/check_formatting.sh"
+)
 
 func init() {
 	event.PullRequestHandler(processPullRequestEvent)
@@ -35,7 +38,7 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 	branch := e.PullRequest.Head.GetRef()
 	base := e.PullRequest.Base.GetRef()
 
-	cmd := exec.CommandContext(ctx, "/opt/format-bot/bin/check_formatting.sh", owner, repo, branch, base)
+	cmd := exec.CommandContext(ctx, checkScript, owner, repo, branch, base)
 	cmd.Stdout = &bytes.Buffer{}
 	cmd.Stderr = &bytes.Buffer{}
 

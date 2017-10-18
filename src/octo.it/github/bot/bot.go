@@ -16,6 +16,7 @@ import (
 var secretKey = []byte("@SECRET@")
 
 func main() {
+	http.HandleFunc("/_ah/health", healthCheckHandler)
 	http.HandleFunc("/", handler)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
@@ -67,4 +68,8 @@ func processPing(ctx context.Context, w http.ResponseWriter) error {
 	log.Printf("received ping")
 	fmt.Fprintln(w, "pong")
 	return nil
+}
+
+func healthCheckHandler(w http.ResponseWriter, _ *http.Request) {
+	fmt.Fprintln(w, "ok")
 }
