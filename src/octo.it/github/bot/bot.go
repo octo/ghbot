@@ -10,6 +10,7 @@ import (
 	"octo.it/github/event"
 
 	_ "octo.it/github/actions/automerge"
+	_ "octo.it/github/actions/format"
 )
 
 var secretKey = []byte("@SECRET@")

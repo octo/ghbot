@@ -11,6 +11,11 @@ import (
 const (
 	DefaultOwner = "collectd"
 	DefaultRepo  = "collectd"
+
+	StatusSuccess = "success"
+	StatusFailure = "failure"
+	StatusError   = "error"
+	StatusPending = "pending"
 )
 
 var accessToken = "@SECRET@"
@@ -79,4 +84,14 @@ func (c *Client) WrapPR(pr *github.PullRequest) *PR {
 		client:      c,
 		PullRequest: pr,
 	}
+}
+
+func (c *Client) CreateStatus(ctx context.Context, name, state, desc, ref string) error {
+	_, _, err := c.Repositories.CreateStatus(ctx, c.owner, c.repo, ref, &github.RepoStatus{
+		State:       github.String(state),
+		Description: github.String(desc),
+		Context:     github.String("clang-format"),
+	})
+
+	return err
 }
