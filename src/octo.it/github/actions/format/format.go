@@ -1,11 +1,10 @@
 package format
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"log"
-	"os/exec"
+	"io/ioutil"
+	"net/http"
 	"sort"
 	"strings"
 	"sync"
@@ -137,18 +136,22 @@ func checkFile(ctx context.Context, pr *client.PR, f client.PRFile) (bool, error
 }
 
 func checkFormat(ctx context.Context, in string) (bool, error) {
-	cmd := exec.CommandContext(ctx, clangFormat, "-style=LLVM")
-	cmd.Stdin = strings.NewReader(in)
+	req, err := http.NewRequest(http.MethodPost, "https://clang-format.appspot.com/", strings.NewReader(in))
+	if err != nil {
+		return false, err
+	}
+	req = req.WithContext(ctx)
 
-	out := &bytes.Buffer{}
-	cmd.Stdout = out
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return false, err
+	}
+	defer res.Body.Close()
 
-	errbuf := &bytes.Buffer{}
-	cmd.Stderr = errbuf
-
-	if err := cmd.Run(); err != nil {
-		return false, fmt.Errorf("clang-format: %v\nSTDERR: %s", err, errbuf)
+	out, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return false, err
 	}
 
-	return in == out.String(), nil
+	return in == string(out), nil
 }
