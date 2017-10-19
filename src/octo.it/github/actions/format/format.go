@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log"
 	"os/exec"
 	"sort"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/google/go-github/github"
 	"octo.it/github/client"
@@ -32,6 +35,13 @@ func hasAnySuffix(s string, suffixes []string) bool {
 	return false
 }
 
+type checkFileStatus struct {
+	ok  bool
+	err error
+
+	client.PRFile
+}
+
 func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) error {
 	if a := e.GetAction(); a != "opened" && a != "synchronize" {
 		return nil
@@ -39,48 +49,65 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 
 	c := client.New(ctx, client.DefaultOwner, client.DefaultRepo)
 	pr := c.WrapPR(e.PullRequest)
-
 	ref := pr.Head.GetSHA()
-	if err := c.CreateStatus(ctx, checkName, client.StatusPending, "Checking formatting ...", ref); err != nil {
-		return err
-	}
-
-	handleError := func(err error) error {
-		msg := fmt.Sprintf("clang-format failed: %v", err)
-		c.CreateStatus(ctx, checkName, client.StatusError, msg, ref)
-		return err
-	}
 
 	files, err := pr.Files(ctx)
 	if err != nil {
 		return err
 	}
 
+	ch := make(chan checkFileStatus)
+	wg := &sync.WaitGroup{}
+
 	var total int
-	var needFormatting []string
 	for _, f := range files {
 		if !hasAnySuffix(f.Filename, []string{".c", ".h", ".proto"}) {
 			continue
 		}
 
-		content, err := pr.Blob(ctx, f.SHA)
-		if err != nil {
-			return handleError(err)
-		}
-
-		ok, err := checkFormat(ctx, content)
-		if err != nil {
-			return handleError(err)
-		}
-
-		if !ok {
-			needFormatting = append(needFormatting, f.Filename)
-		}
 		total++
+		wg.Add(1)
+		go func() {
+			ok, err := checkFile(ctx, pr, f)
+			ch <- checkFileStatus{
+				ok:     ok,
+				err:    err,
+				PRFile: f,
+			}
+			wg.Done()
+		}()
 	}
 
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
 	if total == 0 {
-		return c.CreateStatus(ctx, checkName, client.StatusSuccess, "No matching files", ref)
+		return nil
+	}
+
+	if err := c.CreateStatus(ctx, checkName, client.StatusPending, "Checking formatting ...", ref); err != nil {
+		return err
+	}
+
+	var needFormatting []string
+
+	err = nil
+	for s := range ch {
+		if s.err != nil {
+			err = s.err
+			continue
+		}
+
+		if !s.ok {
+			needFormatting = append(needFormatting, s.Filename)
+		}
+	}
+
+	if err != nil {
+		c.CreateStatus(ctx, checkName, client.StatusError, err.Error(), ref)
+		return err
 	}
 
 	if len(needFormatting) != 0 {
@@ -95,6 +122,18 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 		msg = fmt.Sprintf("%d files are correctly formatted", total)
 	}
 	return c.CreateStatus(ctx, checkName, client.StatusSuccess, msg, ref)
+}
+
+func checkFile(ctx context.Context, pr *client.PR, f client.PRFile) (bool, error) {
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+
+	content, err := pr.Blob(ctx, f.SHA)
+	if err != nil {
+		return false, err
+	}
+
+	return checkFormat(ctx, content)
 }
 
 func checkFormat(ctx context.Context, in string) (bool, error) {
