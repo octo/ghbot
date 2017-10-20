@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"sort"
 	"strings"
@@ -55,6 +56,7 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 		return err
 	}
 
+	stage := c.NewStage(e.PullRequest)
 	ch := make(chan checkFileStatus)
 	wg := &sync.WaitGroup{}
 
@@ -67,7 +69,7 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 		total++
 		wg.Add(1)
 		go func() {
-			ok, err := checkFile(ctx, pr, f)
+			ok, err := checkFile(ctx, pr, f, stage)
 			ch <- checkFileStatus{
 				ok:     ok,
 				err:    err,
@@ -110,9 +112,18 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 	}
 
 	if len(needFormatting) != 0 {
+		msg := "clang-format -style=file -i " + strings.Join(needFormatting, " ")
+
+		if pr.GetMaintainerCanModify() {
+			go func() {
+				if err := stage.Commit(ctx, msg); err != nil {
+					log.Printf("stage.Commit(): %v", err)
+				}
+			}()
+		}
+
 		sort.Strings(needFormatting)
-		msg := "Please fix formatting: clang-format -style=file -i " + strings.Join(needFormatting, " ")
-		return c.CreateStatus(ctx, checkName, client.StatusFailure, msg, ref)
+		return c.CreateStatus(ctx, checkName, client.StatusFailure, "Please fix formatting: "+msg, ref)
 	}
 
 	// all files are well formatted
@@ -123,35 +134,45 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 	return c.CreateStatus(ctx, checkName, client.StatusSuccess, msg, ref)
 }
 
-func checkFile(ctx context.Context, pr *client.PR, f client.PRFile) (bool, error) {
+func checkFile(ctx context.Context, pr *client.PR, f client.PRFile, stage *client.Stage) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 
-	content, err := pr.Blob(ctx, f.SHA)
+	got, err := pr.Blob(ctx, f.SHA)
 	if err != nil {
 		return false, err
 	}
 
-	return checkFormat(ctx, content)
-}
-
-func checkFormat(ctx context.Context, in string) (bool, error) {
-	req, err := http.NewRequest(http.MethodPost, "https://clang-format.appspot.com/", strings.NewReader(in))
+	want, err := format(ctx, got)
 	if err != nil {
 		return false, err
+	}
+
+	if got != want {
+		stage.Add(f.Filename, want)
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func format(ctx context.Context, in string) (string, error) {
+	req, err := http.NewRequest(http.MethodPost, "https://clang-format.appspot.com/", strings.NewReader(in))
+	if err != nil {
+		return "", err
 	}
 	req = req.WithContext(ctx)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return false, err
+		return "", err
 	}
 	defer res.Body.Close()
 
 	out, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return false, err
+		return "", err
 	}
 
-	return in == string(out), nil
+	return string(out), nil
 }
