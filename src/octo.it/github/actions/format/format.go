@@ -111,27 +111,28 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 		return err
 	}
 
-	if len(needFormatting) != 0 {
-		msg := "clang-format -style=file -i " + strings.Join(needFormatting, " ")
-
-		if pr.GetMaintainerCanModify() {
-			go func() {
-				if err := stage.Commit(ctx, msg); err != nil {
-					log.Printf("stage.Commit(): %v", err)
-				}
-			}()
+	if len(needFormatting) == 0 {
+		msg := "File is correctly formatted"
+		if total != 1 {
+			msg = fmt.Sprintf("%d files are correctly formatted", total)
 		}
-
-		sort.Strings(needFormatting)
-		return c.CreateStatus(ctx, checkName, client.StatusFailure, "Please fix formatting: "+msg, ref)
+		return c.CreateStatus(ctx, checkName, client.StatusSuccess, msg, ref)
 	}
 
-	// all files are well formatted
-	msg := "File is correctly formatted"
-	if total != 1 {
-		msg = fmt.Sprintf("%d files are correctly formatted", total)
+	msg := "clang-format -style=file -i " + strings.Join(needFormatting, " ")
+
+	sort.Strings(needFormatting)
+	if err := c.CreateStatus(ctx, checkName, client.StatusFailure, "Please fix formatting: "+msg, ref); err != nil {
+		return err
 	}
-	return c.CreateStatus(ctx, checkName, client.StatusSuccess, msg, ref)
+
+	if pr.GetMaintainerCanModify() {
+		if err := stage.Commit(ctx, msg); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func checkFile(ctx context.Context, pr *client.PR, f client.PRFile, stage *client.Stage) (bool, error) {
