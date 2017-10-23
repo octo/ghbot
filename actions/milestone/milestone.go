@@ -14,7 +14,7 @@ import (
 )
 
 func init() {
-	event.PullRequestHandler(handler)
+	event.PullRequestHandler("milestone", handler)
 }
 
 func handler(ctx context.Context, e *github.PullRequestEvent) error {

@@ -4,9 +4,10 @@ package event // import "github.com/octo/ghbot/event"
 
 import (
 	"context"
-	"log"
+	"fmt"
 
 	"github.com/google/go-github/github"
+	"google.golang.org/appengine/log"
 )
 
 // Handle handles a webhook event.
@@ -61,7 +62,7 @@ func Handle(ctx context.Context, event interface{}) error {
 	case *github.WatchEvent:
 		return handleWatch(ctx, event)
 	default:
-		log.Printf("unimplemented event type: %T", event)
+		log.Errorf(ctx, "unimplemented event type: %T", event)
 	}
 
 	return nil
@@ -70,20 +71,20 @@ func Handle(ctx context.Context, event interface{}) error {
 //
 // CommitComment events
 //
-var commitCommentHandlers []func(context.Context, *github.CommitCommentEvent) error
+var commitCommentHandlers map[string]func(context.Context, *github.CommitCommentEvent) error
 
 // CommitCommentHandler registers a handler for CommitComment events.
-func CommitCommentHandler(hndl func(context.Context, *github.CommitCommentEvent) error) {
-	commitCommentHandlers = append(commitCommentHandlers, hndl)
+func CommitCommentHandler(name string, hndl func(context.Context, *github.CommitCommentEvent) error) {
+	commitCommentHandlers[name] = hndl
 }
 
 // handleCommitComment calls all handlers for CommitComment events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleCommitComment(ctx context.Context, event *github.CommitCommentEvent) error {
-	for _, hndl := range commitCommentHandlers {
+	for name, hndl := range commitCommentHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q CommitComment handler: %v", name, err)
 		}
 	}
 
@@ -93,20 +94,20 @@ func handleCommitComment(ctx context.Context, event *github.CommitCommentEvent) 
 //
 // Create events
 //
-var createHandlers []func(context.Context, *github.CreateEvent) error
+var createHandlers map[string]func(context.Context, *github.CreateEvent) error
 
 // CreateHandler registers a handler for Create events.
-func CreateHandler(hndl func(context.Context, *github.CreateEvent) error) {
-	createHandlers = append(createHandlers, hndl)
+func CreateHandler(name string, hndl func(context.Context, *github.CreateEvent) error) {
+	createHandlers[name] = hndl
 }
 
 // handleCreate calls all handlers for Create events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleCreate(ctx context.Context, event *github.CreateEvent) error {
-	for _, hndl := range createHandlers {
+	for name, hndl := range createHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q Create handler: %v", name, err)
 		}
 	}
 
@@ -116,20 +117,20 @@ func handleCreate(ctx context.Context, event *github.CreateEvent) error {
 //
 // Delete events
 //
-var deleteHandlers []func(context.Context, *github.DeleteEvent) error
+var deleteHandlers map[string]func(context.Context, *github.DeleteEvent) error
 
 // DeleteHandler registers a handler for Delete events.
-func DeleteHandler(hndl func(context.Context, *github.DeleteEvent) error) {
-	deleteHandlers = append(deleteHandlers, hndl)
+func DeleteHandler(name string, hndl func(context.Context, *github.DeleteEvent) error) {
+	deleteHandlers[name] = hndl
 }
 
 // handleDelete calls all handlers for Delete events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleDelete(ctx context.Context, event *github.DeleteEvent) error {
-	for _, hndl := range deleteHandlers {
+	for name, hndl := range deleteHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q Delete handler: %v", name, err)
 		}
 	}
 
@@ -139,20 +140,20 @@ func handleDelete(ctx context.Context, event *github.DeleteEvent) error {
 //
 // Deployment events
 //
-var deploymentHandlers []func(context.Context, *github.DeploymentEvent) error
+var deploymentHandlers map[string]func(context.Context, *github.DeploymentEvent) error
 
 // DeploymentHandler registers a handler for Deployment events.
-func DeploymentHandler(hndl func(context.Context, *github.DeploymentEvent) error) {
-	deploymentHandlers = append(deploymentHandlers, hndl)
+func DeploymentHandler(name string, hndl func(context.Context, *github.DeploymentEvent) error) {
+	deploymentHandlers[name] = hndl
 }
 
 // handleDeployment calls all handlers for Deployment events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleDeployment(ctx context.Context, event *github.DeploymentEvent) error {
-	for _, hndl := range deploymentHandlers {
+	for name, hndl := range deploymentHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q Deployment handler: %v", name, err)
 		}
 	}
 
@@ -162,20 +163,20 @@ func handleDeployment(ctx context.Context, event *github.DeploymentEvent) error 
 //
 // DeploymentStatus events
 //
-var deploymentStatusHandlers []func(context.Context, *github.DeploymentStatusEvent) error
+var deploymentStatusHandlers map[string]func(context.Context, *github.DeploymentStatusEvent) error
 
 // DeploymentStatusHandler registers a handler for DeploymentStatus events.
-func DeploymentStatusHandler(hndl func(context.Context, *github.DeploymentStatusEvent) error) {
-	deploymentStatusHandlers = append(deploymentStatusHandlers, hndl)
+func DeploymentStatusHandler(name string, hndl func(context.Context, *github.DeploymentStatusEvent) error) {
+	deploymentStatusHandlers[name] = hndl
 }
 
 // handleDeploymentStatus calls all handlers for DeploymentStatus events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleDeploymentStatus(ctx context.Context, event *github.DeploymentStatusEvent) error {
-	for _, hndl := range deploymentStatusHandlers {
+	for name, hndl := range deploymentStatusHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q DeploymentStatus handler: %v", name, err)
 		}
 	}
 
@@ -185,20 +186,20 @@ func handleDeploymentStatus(ctx context.Context, event *github.DeploymentStatusE
 //
 // Fork events
 //
-var forkHandlers []func(context.Context, *github.ForkEvent) error
+var forkHandlers map[string]func(context.Context, *github.ForkEvent) error
 
 // ForkHandler registers a handler for Fork events.
-func ForkHandler(hndl func(context.Context, *github.ForkEvent) error) {
-	forkHandlers = append(forkHandlers, hndl)
+func ForkHandler(name string, hndl func(context.Context, *github.ForkEvent) error) {
+	forkHandlers[name] = hndl
 }
 
 // handleFork calls all handlers for Fork events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleFork(ctx context.Context, event *github.ForkEvent) error {
-	for _, hndl := range forkHandlers {
+	for name, hndl := range forkHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q Fork handler: %v", name, err)
 		}
 	}
 
@@ -208,20 +209,20 @@ func handleFork(ctx context.Context, event *github.ForkEvent) error {
 //
 // Gollum events
 //
-var gollumHandlers []func(context.Context, *github.GollumEvent) error
+var gollumHandlers map[string]func(context.Context, *github.GollumEvent) error
 
 // GollumHandler registers a handler for Gollum events.
-func GollumHandler(hndl func(context.Context, *github.GollumEvent) error) {
-	gollumHandlers = append(gollumHandlers, hndl)
+func GollumHandler(name string, hndl func(context.Context, *github.GollumEvent) error) {
+	gollumHandlers[name] = hndl
 }
 
 // handleGollum calls all handlers for Gollum events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleGollum(ctx context.Context, event *github.GollumEvent) error {
-	for _, hndl := range gollumHandlers {
+	for name, hndl := range gollumHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q Gollum handler: %v", name, err)
 		}
 	}
 
@@ -231,20 +232,20 @@ func handleGollum(ctx context.Context, event *github.GollumEvent) error {
 //
 // IssueComment events
 //
-var issueCommentHandlers []func(context.Context, *github.IssueCommentEvent) error
+var issueCommentHandlers map[string]func(context.Context, *github.IssueCommentEvent) error
 
 // IssueCommentHandler registers a handler for IssueComment events.
-func IssueCommentHandler(hndl func(context.Context, *github.IssueCommentEvent) error) {
-	issueCommentHandlers = append(issueCommentHandlers, hndl)
+func IssueCommentHandler(name string, hndl func(context.Context, *github.IssueCommentEvent) error) {
+	issueCommentHandlers[name] = hndl
 }
 
 // handleIssueComment calls all handlers for IssueComment events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleIssueComment(ctx context.Context, event *github.IssueCommentEvent) error {
-	for _, hndl := range issueCommentHandlers {
+	for name, hndl := range issueCommentHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q IssueComment handler: %v", name, err)
 		}
 	}
 
@@ -254,20 +255,20 @@ func handleIssueComment(ctx context.Context, event *github.IssueCommentEvent) er
 //
 // Issues events
 //
-var issuesHandlers []func(context.Context, *github.IssuesEvent) error
+var issuesHandlers map[string]func(context.Context, *github.IssuesEvent) error
 
 // IssuesHandler registers a handler for Issues events.
-func IssuesHandler(hndl func(context.Context, *github.IssuesEvent) error) {
-	issuesHandlers = append(issuesHandlers, hndl)
+func IssuesHandler(name string, hndl func(context.Context, *github.IssuesEvent) error) {
+	issuesHandlers[name] = hndl
 }
 
 // handleIssues calls all handlers for Issues events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleIssues(ctx context.Context, event *github.IssuesEvent) error {
-	for _, hndl := range issuesHandlers {
+	for name, hndl := range issuesHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q Issues handler: %v", name, err)
 		}
 	}
 
@@ -277,20 +278,20 @@ func handleIssues(ctx context.Context, event *github.IssuesEvent) error {
 //
 // Label events
 //
-var labelHandlers []func(context.Context, *github.LabelEvent) error
+var labelHandlers map[string]func(context.Context, *github.LabelEvent) error
 
 // LabelHandler registers a handler for Label events.
-func LabelHandler(hndl func(context.Context, *github.LabelEvent) error) {
-	labelHandlers = append(labelHandlers, hndl)
+func LabelHandler(name string, hndl func(context.Context, *github.LabelEvent) error) {
+	labelHandlers[name] = hndl
 }
 
 // handleLabel calls all handlers for Label events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleLabel(ctx context.Context, event *github.LabelEvent) error {
-	for _, hndl := range labelHandlers {
+	for name, hndl := range labelHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q Label handler: %v", name, err)
 		}
 	}
 
@@ -300,20 +301,20 @@ func handleLabel(ctx context.Context, event *github.LabelEvent) error {
 //
 // Member events
 //
-var memberHandlers []func(context.Context, *github.MemberEvent) error
+var memberHandlers map[string]func(context.Context, *github.MemberEvent) error
 
 // MemberHandler registers a handler for Member events.
-func MemberHandler(hndl func(context.Context, *github.MemberEvent) error) {
-	memberHandlers = append(memberHandlers, hndl)
+func MemberHandler(name string, hndl func(context.Context, *github.MemberEvent) error) {
+	memberHandlers[name] = hndl
 }
 
 // handleMember calls all handlers for Member events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleMember(ctx context.Context, event *github.MemberEvent) error {
-	for _, hndl := range memberHandlers {
+	for name, hndl := range memberHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q Member handler: %v", name, err)
 		}
 	}
 
@@ -323,20 +324,20 @@ func handleMember(ctx context.Context, event *github.MemberEvent) error {
 //
 // Membership events
 //
-var membershipHandlers []func(context.Context, *github.MembershipEvent) error
+var membershipHandlers map[string]func(context.Context, *github.MembershipEvent) error
 
 // MembershipHandler registers a handler for Membership events.
-func MembershipHandler(hndl func(context.Context, *github.MembershipEvent) error) {
-	membershipHandlers = append(membershipHandlers, hndl)
+func MembershipHandler(name string, hndl func(context.Context, *github.MembershipEvent) error) {
+	membershipHandlers[name] = hndl
 }
 
 // handleMembership calls all handlers for Membership events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleMembership(ctx context.Context, event *github.MembershipEvent) error {
-	for _, hndl := range membershipHandlers {
+	for name, hndl := range membershipHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q Membership handler: %v", name, err)
 		}
 	}
 
@@ -346,20 +347,20 @@ func handleMembership(ctx context.Context, event *github.MembershipEvent) error 
 //
 // Milestone events
 //
-var milestoneHandlers []func(context.Context, *github.MilestoneEvent) error
+var milestoneHandlers map[string]func(context.Context, *github.MilestoneEvent) error
 
 // MilestoneHandler registers a handler for Milestone events.
-func MilestoneHandler(hndl func(context.Context, *github.MilestoneEvent) error) {
-	milestoneHandlers = append(milestoneHandlers, hndl)
+func MilestoneHandler(name string, hndl func(context.Context, *github.MilestoneEvent) error) {
+	milestoneHandlers[name] = hndl
 }
 
 // handleMilestone calls all handlers for Milestone events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleMilestone(ctx context.Context, event *github.MilestoneEvent) error {
-	for _, hndl := range milestoneHandlers {
+	for name, hndl := range milestoneHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q Milestone handler: %v", name, err)
 		}
 	}
 
@@ -369,20 +370,20 @@ func handleMilestone(ctx context.Context, event *github.MilestoneEvent) error {
 //
 // PageBuild events
 //
-var pageBuildHandlers []func(context.Context, *github.PageBuildEvent) error
+var pageBuildHandlers map[string]func(context.Context, *github.PageBuildEvent) error
 
 // PageBuildHandler registers a handler for PageBuild events.
-func PageBuildHandler(hndl func(context.Context, *github.PageBuildEvent) error) {
-	pageBuildHandlers = append(pageBuildHandlers, hndl)
+func PageBuildHandler(name string, hndl func(context.Context, *github.PageBuildEvent) error) {
+	pageBuildHandlers[name] = hndl
 }
 
 // handlePageBuild calls all handlers for PageBuild events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handlePageBuild(ctx context.Context, event *github.PageBuildEvent) error {
-	for _, hndl := range pageBuildHandlers {
+	for name, hndl := range pageBuildHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q PageBuild handler: %v", name, err)
 		}
 	}
 
@@ -392,20 +393,20 @@ func handlePageBuild(ctx context.Context, event *github.PageBuildEvent) error {
 //
 // Public events
 //
-var publicHandlers []func(context.Context, *github.PublicEvent) error
+var publicHandlers map[string]func(context.Context, *github.PublicEvent) error
 
 // PublicHandler registers a handler for Public events.
-func PublicHandler(hndl func(context.Context, *github.PublicEvent) error) {
-	publicHandlers = append(publicHandlers, hndl)
+func PublicHandler(name string, hndl func(context.Context, *github.PublicEvent) error) {
+	publicHandlers[name] = hndl
 }
 
 // handlePublic calls all handlers for Public events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handlePublic(ctx context.Context, event *github.PublicEvent) error {
-	for _, hndl := range publicHandlers {
+	for name, hndl := range publicHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q Public handler: %v", name, err)
 		}
 	}
 
@@ -415,20 +416,20 @@ func handlePublic(ctx context.Context, event *github.PublicEvent) error {
 //
 // PullRequest events
 //
-var pullRequestHandlers []func(context.Context, *github.PullRequestEvent) error
+var pullRequestHandlers map[string]func(context.Context, *github.PullRequestEvent) error
 
 // PullRequestHandler registers a handler for PullRequest events.
-func PullRequestHandler(hndl func(context.Context, *github.PullRequestEvent) error) {
-	pullRequestHandlers = append(pullRequestHandlers, hndl)
+func PullRequestHandler(name string, hndl func(context.Context, *github.PullRequestEvent) error) {
+	pullRequestHandlers[name] = hndl
 }
 
 // handlePullRequest calls all handlers for PullRequest events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handlePullRequest(ctx context.Context, event *github.PullRequestEvent) error {
-	for _, hndl := range pullRequestHandlers {
+	for name, hndl := range pullRequestHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q PullRequest handler: %v", name, err)
 		}
 	}
 
@@ -438,20 +439,20 @@ func handlePullRequest(ctx context.Context, event *github.PullRequestEvent) erro
 //
 // PullRequestReview events
 //
-var pullRequestReviewHandlers []func(context.Context, *github.PullRequestReviewEvent) error
+var pullRequestReviewHandlers map[string]func(context.Context, *github.PullRequestReviewEvent) error
 
 // PullRequestReviewHandler registers a handler for PullRequestReview events.
-func PullRequestReviewHandler(hndl func(context.Context, *github.PullRequestReviewEvent) error) {
-	pullRequestReviewHandlers = append(pullRequestReviewHandlers, hndl)
+func PullRequestReviewHandler(name string, hndl func(context.Context, *github.PullRequestReviewEvent) error) {
+	pullRequestReviewHandlers[name] = hndl
 }
 
 // handlePullRequestReview calls all handlers for PullRequestReview events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handlePullRequestReview(ctx context.Context, event *github.PullRequestReviewEvent) error {
-	for _, hndl := range pullRequestReviewHandlers {
+	for name, hndl := range pullRequestReviewHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q PullRequestReview handler: %v", name, err)
 		}
 	}
 
@@ -461,20 +462,20 @@ func handlePullRequestReview(ctx context.Context, event *github.PullRequestRevie
 //
 // PullRequestReviewComment events
 //
-var pullRequestReviewCommentHandlers []func(context.Context, *github.PullRequestReviewCommentEvent) error
+var pullRequestReviewCommentHandlers map[string]func(context.Context, *github.PullRequestReviewCommentEvent) error
 
 // PullRequestReviewCommentHandler registers a handler for PullRequestReviewComment events.
-func PullRequestReviewCommentHandler(hndl func(context.Context, *github.PullRequestReviewCommentEvent) error) {
-	pullRequestReviewCommentHandlers = append(pullRequestReviewCommentHandlers, hndl)
+func PullRequestReviewCommentHandler(name string, hndl func(context.Context, *github.PullRequestReviewCommentEvent) error) {
+	pullRequestReviewCommentHandlers[name] = hndl
 }
 
 // handlePullRequestReviewComment calls all handlers for PullRequestReviewComment events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handlePullRequestReviewComment(ctx context.Context, event *github.PullRequestReviewCommentEvent) error {
-	for _, hndl := range pullRequestReviewCommentHandlers {
+	for name, hndl := range pullRequestReviewCommentHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q PullRequestReviewComment handler: %v", name, err)
 		}
 	}
 
@@ -484,20 +485,20 @@ func handlePullRequestReviewComment(ctx context.Context, event *github.PullReque
 //
 // Push events
 //
-var pushHandlers []func(context.Context, *github.PushEvent) error
+var pushHandlers map[string]func(context.Context, *github.PushEvent) error
 
 // PushHandler registers a handler for Push events.
-func PushHandler(hndl func(context.Context, *github.PushEvent) error) {
-	pushHandlers = append(pushHandlers, hndl)
+func PushHandler(name string, hndl func(context.Context, *github.PushEvent) error) {
+	pushHandlers[name] = hndl
 }
 
 // handlePush calls all handlers for Push events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handlePush(ctx context.Context, event *github.PushEvent) error {
-	for _, hndl := range pushHandlers {
+	for name, hndl := range pushHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q Push handler: %v", name, err)
 		}
 	}
 
@@ -507,20 +508,20 @@ func handlePush(ctx context.Context, event *github.PushEvent) error {
 //
 // Release events
 //
-var releaseHandlers []func(context.Context, *github.ReleaseEvent) error
+var releaseHandlers map[string]func(context.Context, *github.ReleaseEvent) error
 
 // ReleaseHandler registers a handler for Release events.
-func ReleaseHandler(hndl func(context.Context, *github.ReleaseEvent) error) {
-	releaseHandlers = append(releaseHandlers, hndl)
+func ReleaseHandler(name string, hndl func(context.Context, *github.ReleaseEvent) error) {
+	releaseHandlers[name] = hndl
 }
 
 // handleRelease calls all handlers for Release events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleRelease(ctx context.Context, event *github.ReleaseEvent) error {
-	for _, hndl := range releaseHandlers {
+	for name, hndl := range releaseHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q Release handler: %v", name, err)
 		}
 	}
 
@@ -530,20 +531,20 @@ func handleRelease(ctx context.Context, event *github.ReleaseEvent) error {
 //
 // Repository events
 //
-var repositoryHandlers []func(context.Context, *github.RepositoryEvent) error
+var repositoryHandlers map[string]func(context.Context, *github.RepositoryEvent) error
 
 // RepositoryHandler registers a handler for Repository events.
-func RepositoryHandler(hndl func(context.Context, *github.RepositoryEvent) error) {
-	repositoryHandlers = append(repositoryHandlers, hndl)
+func RepositoryHandler(name string, hndl func(context.Context, *github.RepositoryEvent) error) {
+	repositoryHandlers[name] = hndl
 }
 
 // handleRepository calls all handlers for Repository events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleRepository(ctx context.Context, event *github.RepositoryEvent) error {
-	for _, hndl := range repositoryHandlers {
+	for name, hndl := range repositoryHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q Repository handler: %v", name, err)
 		}
 	}
 
@@ -553,20 +554,20 @@ func handleRepository(ctx context.Context, event *github.RepositoryEvent) error 
 //
 // Status events
 //
-var statusHandlers []func(context.Context, *github.StatusEvent) error
+var statusHandlers map[string]func(context.Context, *github.StatusEvent) error
 
 // StatusHandler registers a handler for Status events.
-func StatusHandler(hndl func(context.Context, *github.StatusEvent) error) {
-	statusHandlers = append(statusHandlers, hndl)
+func StatusHandler(name string, hndl func(context.Context, *github.StatusEvent) error) {
+	statusHandlers[name] = hndl
 }
 
 // handleStatus calls all handlers for Status events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleStatus(ctx context.Context, event *github.StatusEvent) error {
-	for _, hndl := range statusHandlers {
+	for name, hndl := range statusHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q Status handler: %v", name, err)
 		}
 	}
 
@@ -576,20 +577,20 @@ func handleStatus(ctx context.Context, event *github.StatusEvent) error {
 //
 // TeamAdd events
 //
-var teamAddHandlers []func(context.Context, *github.TeamAddEvent) error
+var teamAddHandlers map[string]func(context.Context, *github.TeamAddEvent) error
 
 // TeamAddHandler registers a handler for TeamAdd events.
-func TeamAddHandler(hndl func(context.Context, *github.TeamAddEvent) error) {
-	teamAddHandlers = append(teamAddHandlers, hndl)
+func TeamAddHandler(name string, hndl func(context.Context, *github.TeamAddEvent) error) {
+	teamAddHandlers[name] = hndl
 }
 
 // handleTeamAdd calls all handlers for TeamAdd events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleTeamAdd(ctx context.Context, event *github.TeamAddEvent) error {
-	for _, hndl := range teamAddHandlers {
+	for name, hndl := range teamAddHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q TeamAdd handler: %v", name, err)
 		}
 	}
 
@@ -599,20 +600,20 @@ func handleTeamAdd(ctx context.Context, event *github.TeamAddEvent) error {
 //
 // Watch events
 //
-var watchHandlers []func(context.Context, *github.WatchEvent) error
+var watchHandlers map[string]func(context.Context, *github.WatchEvent) error
 
 // WatchHandler registers a handler for Watch events.
-func WatchHandler(hndl func(context.Context, *github.WatchEvent) error) {
-	watchHandlers = append(watchHandlers, hndl)
+func WatchHandler(name string, hndl func(context.Context, *github.WatchEvent) error) {
+	watchHandlers[name] = hndl
 }
 
 // handleWatch calls all handlers for Watch events. If a handler
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleWatch(ctx context.Context, event *github.WatchEvent) error {
-	for _, hndl := range watchHandlers {
+	for name, hndl := range watchHandlers {
 		if err := hndl(ctx, event); err != nil {
-			return err
+			return fmt.Errorf("%q Watch handler: %v", name, err)
 		}
 	}
 

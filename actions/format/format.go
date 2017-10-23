@@ -18,12 +18,11 @@ import (
 )
 
 const (
-	checkName   = "clang-format"
-	clangFormat = "/usr/bin/clang-format"
+	checkName = "clang-format"
 )
 
 func init() {
-	event.PullRequestHandler(processPullRequestEvent)
+	event.PullRequestHandler("format", processPullRequestEvent)
 }
 
 func hasAnySuffix(s string, suffixes []string) bool {

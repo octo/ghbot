@@ -19,8 +19,8 @@ var requiredChecks = []string{
 }
 
 func init() {
-	event.PullRequestHandler(processPullRequestEvent)
-	event.StatusHandler(processStatusEvent)
+	event.PullRequestHandler("automerge", processPullRequestEvent)
+	event.StatusHandler("automerge", processStatusEvent)
 }
 
 func processPullRequestEvent(ctx context.Context, event *github.PullRequestEvent) error {
