@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/octo/ghbot/event"
+	"google.golang.org/appengine"
 
 	_ "github.com/octo/ghbot/actions/automerge"
 	_ "github.com/octo/ghbot/actions/format"
@@ -21,7 +22,7 @@ func init() {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	ctx := appengine.NewContext(r)
 
 	if r.Method != "POST" {
 		http.Redirect(w, r, "https://github.com/collectd/collectd/", http.StatusFound)
