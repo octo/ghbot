@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"sort"
 	"strings"
@@ -12,8 +11,8 @@ import (
 	"time"
 
 	"github.com/google/go-github/github"
-	"octo.it/github/client"
-	"octo.it/github/event"
+	"github.com/octo/ghbot/client"
+	"github.com/octo/ghbot/event"
 )
 
 const (

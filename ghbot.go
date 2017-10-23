@@ -7,10 +7,10 @@ import (
 	"net/http"
 
 	"github.com/google/go-github/github"
-	"octo.it/github/event"
+	"github.com/octo/ghbot/event"
 
-	_ "octo.it/github/actions/automerge"
-	_ "octo.it/github/actions/format"
+	_ "github.com/octo/ghbot/actions/automerge"
+	_ "github.com/octo/ghbot/actions/format"
 )
 
 var secretKey = []byte("@SECRET@")
