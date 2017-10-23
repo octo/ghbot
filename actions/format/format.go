@@ -13,6 +13,7 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/octo/ghbot/client"
 	"github.com/octo/ghbot/event"
+	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/urlfetch"
 )
 
@@ -50,6 +51,8 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 	c := client.New(ctx, client.DefaultOwner, client.DefaultRepo)
 	pr := c.WrapPR(e.PullRequest)
 	ref := pr.Head.GetSHA()
+
+	log.Debugf(ctx, "checking formatting of %v", pr)
 
 	files, err := pr.Files(ctx)
 	if err != nil {
@@ -102,6 +105,7 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 		}
 
 		if !s.ok {
+			log.Debugf(ctx, "%q needs formatting", s.Filename)
 			needFormatting = append(needFormatting, s.Filename)
 		}
 	}
@@ -126,11 +130,18 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 		return err
 	}
 
-	if pr.GetMaintainerCanModify() {
-		if err := stage.Commit(ctx, msg); err != nil {
-			return err
+	// TODO(octo): this does not work, because the Github API doesn't allow
+	// us to create blobs or trees in the reposiroty of the PR author (it returns a 404).
+	// Either figure out how to do this, create the changes in our own repo
+	// and create a PR (ideal, but how to pull in all changes?) or give up
+	// on the idea.
+	/*
+		if pr.GetMaintainerCanModify() {
+			if err := stage.Commit(ctx, msg); err != nil {
+				return err
+			}
 		}
-	}
+	*/
 
 	return nil
 }
