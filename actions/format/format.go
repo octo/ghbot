@@ -71,7 +71,11 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 
 		total++
 		wg.Add(1)
-		go func() {
+
+		// Pass f as argument so it is being copied, i.e. f inside the
+		// closure is a different variable than the loop variable,
+		// which will be changed soon, causing a race condition.
+		go func(f client.PRFile) {
 			ok, err := checkFile(ctx, pr, f, stage)
 			ch <- checkFileStatus{
 				ok:     ok,
@@ -79,7 +83,7 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 				PRFile: f,
 			}
 			wg.Done()
-		}()
+		}(f)
 	}
 
 	go func() {
