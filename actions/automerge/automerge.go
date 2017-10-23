@@ -54,7 +54,7 @@ func process(ctx context.Context, pr *client.PR) error {
 	log.Debugf(ctx, "checking if %v can be automerged", pr)
 
 	if pr.GetMerged() || pr.GetState() != "open" {
-		log.Debugf(ctx, "automerge: no, not open", pr)
+		log.Debugf(ctx, "automerge: no, not open")
 		return nil
 	}
 
