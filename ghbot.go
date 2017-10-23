@@ -3,12 +3,12 @@ package ghbot
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/google/go-github/github"
 	"github.com/octo/ghbot/event"
 	"google.golang.org/appengine"
+	"google.golang.org/appengine/log"
 
 	_ "github.com/octo/ghbot/actions/automerge"
 	_ "github.com/octo/ghbot/actions/format"
@@ -30,7 +30,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := contextHandler(ctx, w, r); err != nil {
-		log.Printf("contextHandler: %v", err)
+		log.Errorf(ctx, "contextHandler: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -39,6 +39,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 func contextHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	payload, err := github.ValidatePayload(r, secretKey)
 	if err != nil {
+		log.Errorf(ctx, "ValidatePayload: %v", err)
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return nil
 	}
@@ -50,6 +51,7 @@ func contextHandler(ctx context.Context, w http.ResponseWriter, r *http.Request)
 
 	e, err := github.ParseWebHook(whType, payload)
 	if err != nil {
+		log.Errorf(ctx, "ParseWebHook: %v", err)
 		httpStatusUnprocessableEntity := 422
 		http.Error(w, err.Error(), httpStatusUnprocessableEntity)
 		return nil
