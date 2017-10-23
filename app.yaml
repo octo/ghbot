@@ -1,8 +1,8 @@
 runtime: go
-api_version: go1
+api_version: go1.8
 
 automatic_scaling:
-  min_num_instances: 1
+  max_idle_instances: 1
 
 
 handlers:
