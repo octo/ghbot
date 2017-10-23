@@ -81,7 +81,7 @@ for (@eventTypes) {
 //
 // $type events
 //
-var $global_var map[string]func(context.Context, *github.${type}Event) error
+var $global_var = map[string]func(context.Context, *github.${type}Event) error{}
 
 // ${type}Handler registers a handler for ${type} events.
 func ${type}Handler(name string, hndl func(context.Context, *github.${type}Event) error) {

@@ -71,7 +71,7 @@ func Handle(ctx context.Context, event interface{}) error {
 //
 // CommitComment events
 //
-var commitCommentHandlers map[string]func(context.Context, *github.CommitCommentEvent) error
+var commitCommentHandlers = map[string]func(context.Context, *github.CommitCommentEvent) error{}
 
 // CommitCommentHandler registers a handler for CommitComment events.
 func CommitCommentHandler(name string, hndl func(context.Context, *github.CommitCommentEvent) error) {
@@ -94,7 +94,7 @@ func handleCommitComment(ctx context.Context, event *github.CommitCommentEvent) 
 //
 // Create events
 //
-var createHandlers map[string]func(context.Context, *github.CreateEvent) error
+var createHandlers = map[string]func(context.Context, *github.CreateEvent) error{}
 
 // CreateHandler registers a handler for Create events.
 func CreateHandler(name string, hndl func(context.Context, *github.CreateEvent) error) {
@@ -117,7 +117,7 @@ func handleCreate(ctx context.Context, event *github.CreateEvent) error {
 //
 // Delete events
 //
-var deleteHandlers map[string]func(context.Context, *github.DeleteEvent) error
+var deleteHandlers = map[string]func(context.Context, *github.DeleteEvent) error{}
 
 // DeleteHandler registers a handler for Delete events.
 func DeleteHandler(name string, hndl func(context.Context, *github.DeleteEvent) error) {
@@ -140,7 +140,7 @@ func handleDelete(ctx context.Context, event *github.DeleteEvent) error {
 //
 // Deployment events
 //
-var deploymentHandlers map[string]func(context.Context, *github.DeploymentEvent) error
+var deploymentHandlers = map[string]func(context.Context, *github.DeploymentEvent) error{}
 
 // DeploymentHandler registers a handler for Deployment events.
 func DeploymentHandler(name string, hndl func(context.Context, *github.DeploymentEvent) error) {
@@ -163,7 +163,7 @@ func handleDeployment(ctx context.Context, event *github.DeploymentEvent) error 
 //
 // DeploymentStatus events
 //
-var deploymentStatusHandlers map[string]func(context.Context, *github.DeploymentStatusEvent) error
+var deploymentStatusHandlers = map[string]func(context.Context, *github.DeploymentStatusEvent) error{}
 
 // DeploymentStatusHandler registers a handler for DeploymentStatus events.
 func DeploymentStatusHandler(name string, hndl func(context.Context, *github.DeploymentStatusEvent) error) {
@@ -186,7 +186,7 @@ func handleDeploymentStatus(ctx context.Context, event *github.DeploymentStatusE
 //
 // Fork events
 //
-var forkHandlers map[string]func(context.Context, *github.ForkEvent) error
+var forkHandlers = map[string]func(context.Context, *github.ForkEvent) error{}
 
 // ForkHandler registers a handler for Fork events.
 func ForkHandler(name string, hndl func(context.Context, *github.ForkEvent) error) {
@@ -209,7 +209,7 @@ func handleFork(ctx context.Context, event *github.ForkEvent) error {
 //
 // Gollum events
 //
-var gollumHandlers map[string]func(context.Context, *github.GollumEvent) error
+var gollumHandlers = map[string]func(context.Context, *github.GollumEvent) error{}
 
 // GollumHandler registers a handler for Gollum events.
 func GollumHandler(name string, hndl func(context.Context, *github.GollumEvent) error) {
@@ -232,7 +232,7 @@ func handleGollum(ctx context.Context, event *github.GollumEvent) error {
 //
 // IssueComment events
 //
-var issueCommentHandlers map[string]func(context.Context, *github.IssueCommentEvent) error
+var issueCommentHandlers = map[string]func(context.Context, *github.IssueCommentEvent) error{}
 
 // IssueCommentHandler registers a handler for IssueComment events.
 func IssueCommentHandler(name string, hndl func(context.Context, *github.IssueCommentEvent) error) {
@@ -255,7 +255,7 @@ func handleIssueComment(ctx context.Context, event *github.IssueCommentEvent) er
 //
 // Issues events
 //
-var issuesHandlers map[string]func(context.Context, *github.IssuesEvent) error
+var issuesHandlers = map[string]func(context.Context, *github.IssuesEvent) error{}
 
 // IssuesHandler registers a handler for Issues events.
 func IssuesHandler(name string, hndl func(context.Context, *github.IssuesEvent) error) {
@@ -278,7 +278,7 @@ func handleIssues(ctx context.Context, event *github.IssuesEvent) error {
 //
 // Label events
 //
-var labelHandlers map[string]func(context.Context, *github.LabelEvent) error
+var labelHandlers = map[string]func(context.Context, *github.LabelEvent) error{}
 
 // LabelHandler registers a handler for Label events.
 func LabelHandler(name string, hndl func(context.Context, *github.LabelEvent) error) {
@@ -301,7 +301,7 @@ func handleLabel(ctx context.Context, event *github.LabelEvent) error {
 //
 // Member events
 //
-var memberHandlers map[string]func(context.Context, *github.MemberEvent) error
+var memberHandlers = map[string]func(context.Context, *github.MemberEvent) error{}
 
 // MemberHandler registers a handler for Member events.
 func MemberHandler(name string, hndl func(context.Context, *github.MemberEvent) error) {
@@ -324,7 +324,7 @@ func handleMember(ctx context.Context, event *github.MemberEvent) error {
 //
 // Membership events
 //
-var membershipHandlers map[string]func(context.Context, *github.MembershipEvent) error
+var membershipHandlers = map[string]func(context.Context, *github.MembershipEvent) error{}
 
 // MembershipHandler registers a handler for Membership events.
 func MembershipHandler(name string, hndl func(context.Context, *github.MembershipEvent) error) {
@@ -347,7 +347,7 @@ func handleMembership(ctx context.Context, event *github.MembershipEvent) error 
 //
 // Milestone events
 //
-var milestoneHandlers map[string]func(context.Context, *github.MilestoneEvent) error
+var milestoneHandlers = map[string]func(context.Context, *github.MilestoneEvent) error{}
 
 // MilestoneHandler registers a handler for Milestone events.
 func MilestoneHandler(name string, hndl func(context.Context, *github.MilestoneEvent) error) {
@@ -370,7 +370,7 @@ func handleMilestone(ctx context.Context, event *github.MilestoneEvent) error {
 //
 // PageBuild events
 //
-var pageBuildHandlers map[string]func(context.Context, *github.PageBuildEvent) error
+var pageBuildHandlers = map[string]func(context.Context, *github.PageBuildEvent) error{}
 
 // PageBuildHandler registers a handler for PageBuild events.
 func PageBuildHandler(name string, hndl func(context.Context, *github.PageBuildEvent) error) {
@@ -393,7 +393,7 @@ func handlePageBuild(ctx context.Context, event *github.PageBuildEvent) error {
 //
 // Public events
 //
-var publicHandlers map[string]func(context.Context, *github.PublicEvent) error
+var publicHandlers = map[string]func(context.Context, *github.PublicEvent) error{}
 
 // PublicHandler registers a handler for Public events.
 func PublicHandler(name string, hndl func(context.Context, *github.PublicEvent) error) {
@@ -416,7 +416,7 @@ func handlePublic(ctx context.Context, event *github.PublicEvent) error {
 //
 // PullRequest events
 //
-var pullRequestHandlers map[string]func(context.Context, *github.PullRequestEvent) error
+var pullRequestHandlers = map[string]func(context.Context, *github.PullRequestEvent) error{}
 
 // PullRequestHandler registers a handler for PullRequest events.
 func PullRequestHandler(name string, hndl func(context.Context, *github.PullRequestEvent) error) {
@@ -439,7 +439,7 @@ func handlePullRequest(ctx context.Context, event *github.PullRequestEvent) erro
 //
 // PullRequestReview events
 //
-var pullRequestReviewHandlers map[string]func(context.Context, *github.PullRequestReviewEvent) error
+var pullRequestReviewHandlers = map[string]func(context.Context, *github.PullRequestReviewEvent) error{}
 
 // PullRequestReviewHandler registers a handler for PullRequestReview events.
 func PullRequestReviewHandler(name string, hndl func(context.Context, *github.PullRequestReviewEvent) error) {
@@ -462,7 +462,7 @@ func handlePullRequestReview(ctx context.Context, event *github.PullRequestRevie
 //
 // PullRequestReviewComment events
 //
-var pullRequestReviewCommentHandlers map[string]func(context.Context, *github.PullRequestReviewCommentEvent) error
+var pullRequestReviewCommentHandlers = map[string]func(context.Context, *github.PullRequestReviewCommentEvent) error{}
 
 // PullRequestReviewCommentHandler registers a handler for PullRequestReviewComment events.
 func PullRequestReviewCommentHandler(name string, hndl func(context.Context, *github.PullRequestReviewCommentEvent) error) {
@@ -485,7 +485,7 @@ func handlePullRequestReviewComment(ctx context.Context, event *github.PullReque
 //
 // Push events
 //
-var pushHandlers map[string]func(context.Context, *github.PushEvent) error
+var pushHandlers = map[string]func(context.Context, *github.PushEvent) error{}
 
 // PushHandler registers a handler for Push events.
 func PushHandler(name string, hndl func(context.Context, *github.PushEvent) error) {
@@ -508,7 +508,7 @@ func handlePush(ctx context.Context, event *github.PushEvent) error {
 //
 // Release events
 //
-var releaseHandlers map[string]func(context.Context, *github.ReleaseEvent) error
+var releaseHandlers = map[string]func(context.Context, *github.ReleaseEvent) error{}
 
 // ReleaseHandler registers a handler for Release events.
 func ReleaseHandler(name string, hndl func(context.Context, *github.ReleaseEvent) error) {
@@ -531,7 +531,7 @@ func handleRelease(ctx context.Context, event *github.ReleaseEvent) error {
 //
 // Repository events
 //
-var repositoryHandlers map[string]func(context.Context, *github.RepositoryEvent) error
+var repositoryHandlers = map[string]func(context.Context, *github.RepositoryEvent) error{}
 
 // RepositoryHandler registers a handler for Repository events.
 func RepositoryHandler(name string, hndl func(context.Context, *github.RepositoryEvent) error) {
@@ -554,7 +554,7 @@ func handleRepository(ctx context.Context, event *github.RepositoryEvent) error 
 //
 // Status events
 //
-var statusHandlers map[string]func(context.Context, *github.StatusEvent) error
+var statusHandlers = map[string]func(context.Context, *github.StatusEvent) error{}
 
 // StatusHandler registers a handler for Status events.
 func StatusHandler(name string, hndl func(context.Context, *github.StatusEvent) error) {
@@ -577,7 +577,7 @@ func handleStatus(ctx context.Context, event *github.StatusEvent) error {
 //
 // TeamAdd events
 //
-var teamAddHandlers map[string]func(context.Context, *github.TeamAddEvent) error
+var teamAddHandlers = map[string]func(context.Context, *github.TeamAddEvent) error{}
 
 // TeamAddHandler registers a handler for TeamAdd events.
 func TeamAddHandler(name string, hndl func(context.Context, *github.TeamAddEvent) error) {
@@ -600,7 +600,7 @@ func handleTeamAdd(ctx context.Context, event *github.TeamAddEvent) error {
 //
 // Watch events
 //
-var watchHandlers map[string]func(context.Context, *github.WatchEvent) error
+var watchHandlers = map[string]func(context.Context, *github.WatchEvent) error{}
 
 // WatchHandler registers a handler for Watch events.
 func WatchHandler(name string, hndl func(context.Context, *github.WatchEvent) error) {
