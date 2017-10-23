@@ -18,7 +18,6 @@ import (
 var secretKey = []byte("@SECRET@")
 
 func init() {
-	http.HandleFunc("/_ah/health", healthCheckHandler)
 	http.HandleFunc("/", handler)
 }
 
@@ -69,8 +68,4 @@ func contextHandler(ctx context.Context, w http.ResponseWriter, r *http.Request)
 func processPing(ctx context.Context, w http.ResponseWriter) error {
 	fmt.Fprintln(w, "pong")
 	return nil
-}
-
-func healthCheckHandler(w http.ResponseWriter, _ *http.Request) {
-	fmt.Fprintln(w, "ok")
 }
