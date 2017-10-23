@@ -1,4 +1,4 @@
-package main
+package ghbot
 
 import (
 	"context"
@@ -15,11 +15,9 @@ import (
 
 var secretKey = []byte("@SECRET@")
 
-func main() {
+func init() {
 	http.HandleFunc("/_ah/health", healthCheckHandler)
 	http.HandleFunc("/", handler)
-
-	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +63,6 @@ func contextHandler(ctx context.Context, w http.ResponseWriter, r *http.Request)
 }
 
 func processPing(ctx context.Context, w http.ResponseWriter) error {
-	log.Printf("received ping")
 	fmt.Fprintln(w, "pong")
 	return nil
 }
