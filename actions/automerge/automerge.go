@@ -3,11 +3,11 @@ package automerge
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/google/go-github/github"
 	"github.com/octo/ghbot/client"
 	"github.com/octo/ghbot/event"
+	"google.golang.org/appengine/log"
 )
 
 const automergeLabel = "Automerge"
@@ -37,7 +37,7 @@ func processStatusEvent(ctx context.Context, event *github.StatusEvent) error {
 
 	pr, err := c.PullRequestBySHA(ctx, *event.SHA)
 	if err != nil {
-		log.Printf("PullRequestBySHA(%q) = %v", *event.SHA, err)
+		log.Debugf(ctx, "automerge: PullRequestBySHA(%q) = %v", *event.SHA, err)
 		return nil
 	}
 
@@ -51,7 +51,10 @@ func processStatusEvent(ctx context.Context, event *github.StatusEvent) error {
 // * There are no merge conflicts.
 // * Is has the Automerge label.
 func process(ctx context.Context, pr *client.PR) error {
-	if pr.Merged == nil || *pr.Merged || pr.State == nil || *pr.State != "open" {
+	log.Debugf(ctx, "checking if %v can be automerged", pr)
+
+	if pr.GetMerged() || pr.GetState() != "open" {
+		log.Debugf(ctx, "automerge: no, not open", pr)
 		return nil
 	}
 
@@ -67,19 +70,13 @@ func process(ctx context.Context, pr *client.PR) error {
 
 	for _, req := range requiredChecks {
 		if !success[req] {
+			log.Debugf(ctx, "automerge: no, check %q missing or not successful", req)
 			return nil
 		}
 	}
 
-	if status.State == nil {
-		log.Printf("PR %v has no status yes", pr)
-		return nil
-	} else if *status.State == "pending" {
-		log.Printf(`PR %v has state "pending"`, pr)
-		return nil
-	}
-
-	if *status.State != "success" {
+	if s := status.GetState(); s != "success" {
+		log.Debugf(ctx, "automerge: no, overall status is %q", s)
 		return nil
 	}
 
@@ -88,7 +85,7 @@ func process(ctx context.Context, pr *client.PR) error {
 		return err
 	}
 	if !ok {
-		log.Printf("PR %v: checks succeeded but cannot merge", pr)
+		log.Debugf(ctx, "automerge: no, has merge conflicts")
 		return nil
 	}
 
@@ -98,10 +95,12 @@ func process(ctx context.Context, pr *client.PR) error {
 	}
 
 	if !issue.HasLabel(automergeLabel) {
+		log.Debugf(ctx, "automerge: no, does not have the %q label", automergeLabel)
 		return nil
 	}
 
-	title := fmt.Sprintf("Auto-Merge pull request %v from %s/%s", pr, *pr.Head.User.Login, *pr.Head.Ref)
+	log.Infof(ctx, "merging %v", pr)
+	title := fmt.Sprintf("Auto-Merge pull request %v from %s/%s", pr, pr.Head.User.GetLogin(), pr.Head.GetRef())
 	msg := fmt.Sprintf("Automatically merged due to %q label", automergeLabel)
 	return pr.Merge(ctx, title, msg)
 }
