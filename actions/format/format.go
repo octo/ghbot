@@ -13,6 +13,7 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/octo/ghbot/client"
 	"github.com/octo/ghbot/event"
+	"google.golang.org/appengine/urlfetch"
 )
 
 const (
@@ -157,13 +158,8 @@ func checkFile(ctx context.Context, pr *client.PR, f client.PRFile, stage *clien
 }
 
 func format(ctx context.Context, in string) (string, error) {
-	req, err := http.NewRequest(http.MethodPost, "https://clang-format.appspot.com/", strings.NewReader(in))
-	if err != nil {
-		return "", err
-	}
-	req = req.WithContext(ctx)
-
-	res, err := http.DefaultClient.Do(req)
+	res, err := urlfetch.Client(ctx).Post("https://clang-format.appspot.com/",
+		http.DetectContentType([]byte(in)), strings.NewReader(in))
 	if err != nil {
 		return "", err
 	}
