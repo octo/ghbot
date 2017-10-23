@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/google/go-github/github"
@@ -30,4 +31,11 @@ func (i *Issue) HasLabel(name string) bool {
 	}
 
 	return false
+}
+
+func (i *Issue) Milestone(ctx context.Context, id int) error {
+	_, _, err := i.client.Issues.Edit(ctx, i.client.owner, i.client.repo, i.Number(), &github.IssueRequest{
+		Milestone: github.Int(id),
+	})
+	return err
 }

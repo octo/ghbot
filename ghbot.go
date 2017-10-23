@@ -12,6 +12,7 @@ import (
 
 	_ "github.com/octo/ghbot/actions/automerge"
 	_ "github.com/octo/ghbot/actions/format"
+	_ "github.com/octo/ghbot/actions/milestone"
 )
 
 var secretKey = []byte("@SECRET@")

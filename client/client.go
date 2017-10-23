@@ -65,7 +65,7 @@ func (c *Client) PullRequestBySHA(ctx context.Context, sha string) (*PR, error) 
 		}
 
 		for _, pr := range prs {
-			if *pr.Head.SHA == sha {
+			if pr.Head.GetSHA() == sha {
 				return c.WrapPR(pr), nil
 			}
 		}
@@ -94,4 +94,29 @@ func (c *Client) CreateStatus(ctx context.Context, name, state, desc, ref string
 	})
 
 	return err
+}
+
+func (c *Client) Milestones(ctx context.Context) (map[string]int, error) {
+	var (
+		ret  map[string]int
+		opts github.MilestoneListOptions
+	)
+
+	for {
+		ms, res, err := c.Issues.ListMilestones(ctx, c.owner, c.repo, &opts)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, m := range ms {
+			ret[m.GetTitle()] = m.GetID()
+		}
+
+		if res.NextPage == 0 {
+			break
+		}
+		opts.Page = res.NextPage
+	}
+
+	return ret, nil
 }
