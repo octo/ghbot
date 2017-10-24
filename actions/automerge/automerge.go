@@ -3,6 +3,7 @@ package automerge
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/google/go-github/github"
 	"github.com/octo/ghbot/client"
@@ -29,16 +30,18 @@ func processPullRequestEvent(ctx context.Context, event *github.PullRequestEvent
 }
 
 func processStatusEvent(ctx context.Context, event *github.StatusEvent) error {
-	if *event.State != "success" {
+	if event.GetState() != "success" {
 		return nil
 	}
 
 	c := client.New(ctx, client.DefaultOwner, client.DefaultRepo)
 
-	pr, err := c.PullRequestBySHA(ctx, *event.SHA)
-	if err != nil {
-		log.Debugf(ctx, "automerge: PullRequestBySHA(%q) = %v", *event.SHA, err)
+	pr, err := c.PullRequestBySHA(ctx, event.GetSHA())
+	if err == os.ErrNotExist {
+		log.Debugf(ctx, "automerge: no pull request found for %s", event.GetSHA())
 		return nil
+	} else if err != nil {
+		return err
 	}
 
 	return process(ctx, pr)
@@ -50,6 +53,7 @@ func processStatusEvent(ctx context.Context, event *github.StatusEvent) error {
 // * The overall state is "success".
 // * There are no merge conflicts.
 // * Is has the Automerge label.
+// TODO(octo): check that there is no "changes requested" review.
 func process(ctx context.Context, pr *client.PR) error {
 	log.Debugf(ctx, "checking if %v can be automerged", pr)
 

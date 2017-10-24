@@ -2,10 +2,14 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"regexp"
+	"strconv"
 
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
+	"google.golang.org/appengine/log"
 )
 
 const (
@@ -42,10 +46,7 @@ func (c *Client) Issue(ctx context.Context, number int) (*Issue, error) {
 		return nil, err
 	}
 
-	return &Issue{
-		client: c,
-		Issue:  issue,
-	}, nil
+	return c.WrapIssue(issue), nil
 }
 
 func (c *Client) WrapIssue(issue *github.Issue) *Issue {
@@ -56,27 +57,41 @@ func (c *Client) WrapIssue(issue *github.Issue) *Issue {
 }
 
 func (c *Client) PullRequestBySHA(ctx context.Context, sha string) (*PR, error) {
-	opts := github.PullRequestListOptions{}
+	refs, _, err := c.Git.GetRefs(ctx, c.owner, c.repo, "pull/")
+	if err != nil {
+		return nil, fmt.Errorf("Git.GetRefs(): %v", err)
+	}
 
-	for {
-		prs, res, err := c.PullRequests.List(ctx, c.owner, c.repo, &opts)
+	for _, ref := range refs {
+		if ref.Object.GetSHA() != sha {
+			continue
+		}
+
+		m := regexp.MustCompile("^refs/pull/([1-9][0-9]*)/").FindStringSubmatch(ref.GetRef())
+		if m == nil {
+			// no match
+			continue
+		}
+
+		number, err := strconv.Atoi(m[1])
 		if err != nil {
-			return nil, err
+			log.Errorf(ctx, "strconv.Atoi(%q): %v", m[1], err)
+			continue
 		}
 
-		for _, pr := range prs {
-			if pr.Head.GetSHA() == sha {
-				return c.WrapPR(pr), nil
-			}
-		}
-
-		if res.NextPage == 0 {
-			break
-		}
-		opts.ListOptions.Page = res.NextPage
+		return c.PR(ctx, number)
 	}
 
 	return nil, os.ErrNotExist
+}
+
+func (c *Client) PR(ctx context.Context, number int) (*PR, error) {
+	pr, _, err := c.PullRequests.Get(ctx, c.owner, c.repo, number)
+	if err != nil {
+		return nil, fmt.Errorf("PullRequests.Get(%d): %v", number, err)
+	}
+
+	return c.WrapPR(pr), nil
 }
 
 func (c *Client) WrapPR(pr *github.PullRequest) *PR {
