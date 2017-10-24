@@ -126,10 +126,10 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 		return c.CreateStatus(ctx, checkName, client.StatusSuccess, msg, ref)
 	}
 
-	msg := "clang-format -style=file -i " + strings.Join(needFormatting, " ")
+	msg := "contrib/format.sh " + strings.Join(needFormatting, " ")
 
 	sort.Strings(needFormatting)
-	if err := c.CreateStatus(ctx, checkName, client.StatusFailure, "Please fix formatting: "+msg, ref); err != nil {
+	if err := c.CreateStatus(ctx, checkName, client.StatusFailure, "Please run: "+msg, ref); err != nil {
 		return err
 	}
 
