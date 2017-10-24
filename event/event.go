@@ -5,6 +5,7 @@ package event // import "github.com/octo/ghbot/event"
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/google/go-github/github"
 	"google.golang.org/appengine/log"
@@ -82,13 +83,34 @@ func CommitCommentHandler(name string, hndl func(context.Context, *github.Commit
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleCommitComment(ctx context.Context, event *github.CommitCommentEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range commitCommentHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q CommitComment handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.CommitCommentEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q CommitComment handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -105,13 +127,34 @@ func CreateHandler(name string, hndl func(context.Context, *github.CreateEvent) 
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleCreate(ctx context.Context, event *github.CreateEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range createHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q Create handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.CreateEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q Create handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -128,13 +171,34 @@ func DeleteHandler(name string, hndl func(context.Context, *github.DeleteEvent) 
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleDelete(ctx context.Context, event *github.DeleteEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range deleteHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q Delete handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.DeleteEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q Delete handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -151,13 +215,34 @@ func DeploymentHandler(name string, hndl func(context.Context, *github.Deploymen
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleDeployment(ctx context.Context, event *github.DeploymentEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range deploymentHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q Deployment handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.DeploymentEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q Deployment handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -174,13 +259,34 @@ func DeploymentStatusHandler(name string, hndl func(context.Context, *github.Dep
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleDeploymentStatus(ctx context.Context, event *github.DeploymentStatusEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range deploymentStatusHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q DeploymentStatus handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.DeploymentStatusEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q DeploymentStatus handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -197,13 +303,34 @@ func ForkHandler(name string, hndl func(context.Context, *github.ForkEvent) erro
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleFork(ctx context.Context, event *github.ForkEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range forkHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q Fork handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.ForkEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q Fork handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -220,13 +347,34 @@ func GollumHandler(name string, hndl func(context.Context, *github.GollumEvent) 
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleGollum(ctx context.Context, event *github.GollumEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range gollumHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q Gollum handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.GollumEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q Gollum handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -243,13 +391,34 @@ func IssueCommentHandler(name string, hndl func(context.Context, *github.IssueCo
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleIssueComment(ctx context.Context, event *github.IssueCommentEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range issueCommentHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q IssueComment handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.IssueCommentEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q IssueComment handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -266,13 +435,34 @@ func IssuesHandler(name string, hndl func(context.Context, *github.IssuesEvent) 
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleIssues(ctx context.Context, event *github.IssuesEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range issuesHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q Issues handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.IssuesEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q Issues handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -289,13 +479,34 @@ func LabelHandler(name string, hndl func(context.Context, *github.LabelEvent) er
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleLabel(ctx context.Context, event *github.LabelEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range labelHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q Label handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.LabelEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q Label handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -312,13 +523,34 @@ func MemberHandler(name string, hndl func(context.Context, *github.MemberEvent) 
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleMember(ctx context.Context, event *github.MemberEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range memberHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q Member handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.MemberEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q Member handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -335,13 +567,34 @@ func MembershipHandler(name string, hndl func(context.Context, *github.Membershi
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleMembership(ctx context.Context, event *github.MembershipEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range membershipHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q Membership handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.MembershipEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q Membership handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -358,13 +611,34 @@ func MilestoneHandler(name string, hndl func(context.Context, *github.MilestoneE
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleMilestone(ctx context.Context, event *github.MilestoneEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range milestoneHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q Milestone handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.MilestoneEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q Milestone handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -381,13 +655,34 @@ func PageBuildHandler(name string, hndl func(context.Context, *github.PageBuildE
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handlePageBuild(ctx context.Context, event *github.PageBuildEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range pageBuildHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q PageBuild handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.PageBuildEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q PageBuild handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -404,13 +699,34 @@ func PublicHandler(name string, hndl func(context.Context, *github.PublicEvent) 
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handlePublic(ctx context.Context, event *github.PublicEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range publicHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q Public handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.PublicEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q Public handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -427,13 +743,34 @@ func PullRequestHandler(name string, hndl func(context.Context, *github.PullRequ
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handlePullRequest(ctx context.Context, event *github.PullRequestEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range pullRequestHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q PullRequest handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.PullRequestEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q PullRequest handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -450,13 +787,34 @@ func PullRequestReviewHandler(name string, hndl func(context.Context, *github.Pu
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handlePullRequestReview(ctx context.Context, event *github.PullRequestReviewEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range pullRequestReviewHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q PullRequestReview handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.PullRequestReviewEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q PullRequestReview handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -473,13 +831,34 @@ func PullRequestReviewCommentHandler(name string, hndl func(context.Context, *gi
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handlePullRequestReviewComment(ctx context.Context, event *github.PullRequestReviewCommentEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range pullRequestReviewCommentHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q PullRequestReviewComment handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.PullRequestReviewCommentEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q PullRequestReviewComment handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -496,13 +875,34 @@ func PushHandler(name string, hndl func(context.Context, *github.PushEvent) erro
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handlePush(ctx context.Context, event *github.PushEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range pushHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q Push handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.PushEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q Push handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -519,13 +919,34 @@ func ReleaseHandler(name string, hndl func(context.Context, *github.ReleaseEvent
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleRelease(ctx context.Context, event *github.ReleaseEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range releaseHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q Release handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.ReleaseEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q Release handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -542,13 +963,34 @@ func RepositoryHandler(name string, hndl func(context.Context, *github.Repositor
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleRepository(ctx context.Context, event *github.RepositoryEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range repositoryHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q Repository handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.RepositoryEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q Repository handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -565,13 +1007,34 @@ func StatusHandler(name string, hndl func(context.Context, *github.StatusEvent) 
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleStatus(ctx context.Context, event *github.StatusEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range statusHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q Status handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.StatusEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q Status handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -588,13 +1051,34 @@ func TeamAddHandler(name string, hndl func(context.Context, *github.TeamAddEvent
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleTeamAdd(ctx context.Context, event *github.TeamAddEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range teamAddHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q TeamAdd handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.TeamAddEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q TeamAdd handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 //
@@ -611,11 +1095,32 @@ func WatchHandler(name string, hndl func(context.Context, *github.WatchEvent) er
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleWatch(ctx context.Context, event *github.WatchEvent) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range watchHandlers {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q Watch handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.WatchEvent) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q Watch handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }

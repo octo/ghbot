@@ -47,6 +47,7 @@ package event // import "github.com/octo/ghbot/event"
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/google/go-github/github"
 	"google.golang.org/appengine/log"
@@ -92,13 +93,34 @@ func ${type}Handler(name string, hndl func(context.Context, *github.${type}Event
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handle${type}(ctx context.Context, event *github.${type}Event) error {
+	wg := sync.WaitGroup{}
+	ch := make(chan error)
+
 	for name, hndl := range $global_var {
-		if err := hndl(ctx, event); err != nil {
-			return fmt.Errorf("%q ${type} handler: %v", name, err)
-		}
+		wg.Add(1)
+
+		go func(name string, hndl func(context.Context, *github.${type}Event) error) {
+			defer wg.Done()
+			if err := hndl(ctx, event); err != nil {
+				ch <- fmt.Errorf("%q ${type} handler: %v", name, err)
+			}
+		}(name, hndl)
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var lastErr error
+	for err := range ch {
+		if lastErr != nil {
+			log.Errorf(ctx, "%v", lastErr)
+		}
+		lastErr = err
+	}
+
+	return lastErr
 }
 EOF
 }
