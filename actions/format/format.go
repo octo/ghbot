@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"cloud.google.com/go/trace"
 	"github.com/google/go-github/github"
 	"github.com/octo/ghbot/client"
 	"github.com/octo/ghbot/event"
@@ -172,8 +173,15 @@ func checkFile(ctx context.Context, pr *client.PR, f client.PRFile, stage *clien
 }
 
 func format(ctx context.Context, in string) (string, error) {
+	req, err := http.NewRequest(http.MethodPost, "https://clang-format.appspot.com/", strings.NewReader(in))
+	if err != nil {
+		return "", fmt.Errorf("NewRequest(): %v", err)
+	}
+
+	span := trace.FromContext(ctx).NewRemoteChild(req)
 	res, err := urlfetch.Client(ctx).Post("https://clang-format.appspot.com/",
 		http.DetectContentType([]byte(in)), strings.NewReader(in))
+	span.Finish()
 	if err != nil {
 		return "", err
 	}

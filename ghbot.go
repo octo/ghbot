@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"cloud.google.com/go/trace"
 	"github.com/google/go-github/github"
 	"github.com/octo/ghbot/event"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/option"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/log"
 
@@ -23,6 +26,26 @@ func init() {
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
+
+	creds, err := google.FindDefaultCredentials(ctx, trace.ScopeTraceAppend)
+	if err != nil {
+		log.Criticalf(ctx, "google.FindDefaultCredentials(): %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	traceClient, err := trace.NewClient(ctx, creds.ProjectID,
+		option.WithTokenSource(creds.TokenSource))
+	if err != nil {
+		log.Criticalf(ctx, "trace.NewClient(): %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	span := traceClient.SpanFromRequest(r)
+	defer span.Finish()
+
+	ctx = trace.NewContext(ctx, span)
 
 	if r.Method != "POST" {
 		http.Redirect(w, r, "https://github.com/collectd/collectd/", http.StatusFound)
