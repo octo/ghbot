@@ -127,10 +127,15 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 		return c.CreateStatus(ctx, checkName, client.StatusSuccess, msg, ref)
 	}
 
-	msg := "contrib/format.sh " + strings.Join(needFormatting, " ")
+	msg := "Please run: contrib/format.sh " + strings.Join(needFormatting, " ")
+	// Description must be at most 140 characters.
+	if len(msg) > 139 {
+		msg = msg[:138] + "…"
+		log.Debugf(ctx, "len(msg) = %d", len(msg))
+	}
 
 	sort.Strings(needFormatting)
-	if err := c.CreateStatus(ctx, checkName, client.StatusFailure, "Please run: "+msg, ref); err != nil {
+	if err := c.CreateStatus(ctx, checkName, client.StatusFailure, msg, ref); err != nil {
 		return err
 	}
 
