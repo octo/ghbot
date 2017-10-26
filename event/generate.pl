@@ -49,6 +49,7 @@ import (
 	"fmt"
 	"sync"
 
+	"cloud.google.com/go/trace"
 	"github.com/google/go-github/github"
 	"google.golang.org/appengine/log"
 )
@@ -101,7 +102,11 @@ func handle${type}(ctx context.Context, event *github.${type}Event) error {
 
 		go func(name string, hndl func(context.Context, *github.${type}Event) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/${type}/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q ${type} handler: %v", name, err)
 			}
 		}(name, hndl)

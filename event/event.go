@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"sync"
 
+	"cloud.google.com/go/trace"
 	"github.com/google/go-github/github"
 	"google.golang.org/appengine/log"
 )
@@ -91,7 +92,11 @@ func handleCommitComment(ctx context.Context, event *github.CommitCommentEvent) 
 
 		go func(name string, hndl func(context.Context, *github.CommitCommentEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/CommitComment/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q CommitComment handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -135,7 +140,11 @@ func handleCreate(ctx context.Context, event *github.CreateEvent) error {
 
 		go func(name string, hndl func(context.Context, *github.CreateEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/Create/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q Create handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -179,7 +188,11 @@ func handleDelete(ctx context.Context, event *github.DeleteEvent) error {
 
 		go func(name string, hndl func(context.Context, *github.DeleteEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/Delete/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q Delete handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -223,7 +236,11 @@ func handleDeployment(ctx context.Context, event *github.DeploymentEvent) error 
 
 		go func(name string, hndl func(context.Context, *github.DeploymentEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/Deployment/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q Deployment handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -267,7 +284,11 @@ func handleDeploymentStatus(ctx context.Context, event *github.DeploymentStatusE
 
 		go func(name string, hndl func(context.Context, *github.DeploymentStatusEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/DeploymentStatus/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q DeploymentStatus handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -311,7 +332,11 @@ func handleFork(ctx context.Context, event *github.ForkEvent) error {
 
 		go func(name string, hndl func(context.Context, *github.ForkEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/Fork/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q Fork handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -355,7 +380,11 @@ func handleGollum(ctx context.Context, event *github.GollumEvent) error {
 
 		go func(name string, hndl func(context.Context, *github.GollumEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/Gollum/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q Gollum handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -399,7 +428,11 @@ func handleIssueComment(ctx context.Context, event *github.IssueCommentEvent) er
 
 		go func(name string, hndl func(context.Context, *github.IssueCommentEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/IssueComment/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q IssueComment handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -443,7 +476,11 @@ func handleIssues(ctx context.Context, event *github.IssuesEvent) error {
 
 		go func(name string, hndl func(context.Context, *github.IssuesEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/Issues/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q Issues handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -487,7 +524,11 @@ func handleLabel(ctx context.Context, event *github.LabelEvent) error {
 
 		go func(name string, hndl func(context.Context, *github.LabelEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/Label/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q Label handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -531,7 +572,11 @@ func handleMember(ctx context.Context, event *github.MemberEvent) error {
 
 		go func(name string, hndl func(context.Context, *github.MemberEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/Member/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q Member handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -575,7 +620,11 @@ func handleMembership(ctx context.Context, event *github.MembershipEvent) error 
 
 		go func(name string, hndl func(context.Context, *github.MembershipEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/Membership/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q Membership handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -619,7 +668,11 @@ func handleMilestone(ctx context.Context, event *github.MilestoneEvent) error {
 
 		go func(name string, hndl func(context.Context, *github.MilestoneEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/Milestone/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q Milestone handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -663,7 +716,11 @@ func handlePageBuild(ctx context.Context, event *github.PageBuildEvent) error {
 
 		go func(name string, hndl func(context.Context, *github.PageBuildEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/PageBuild/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q PageBuild handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -707,7 +764,11 @@ func handlePublic(ctx context.Context, event *github.PublicEvent) error {
 
 		go func(name string, hndl func(context.Context, *github.PublicEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/Public/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q Public handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -751,7 +812,11 @@ func handlePullRequest(ctx context.Context, event *github.PullRequestEvent) erro
 
 		go func(name string, hndl func(context.Context, *github.PullRequestEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/PullRequest/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q PullRequest handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -795,7 +860,11 @@ func handlePullRequestReview(ctx context.Context, event *github.PullRequestRevie
 
 		go func(name string, hndl func(context.Context, *github.PullRequestReviewEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/PullRequestReview/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q PullRequestReview handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -839,7 +908,11 @@ func handlePullRequestReviewComment(ctx context.Context, event *github.PullReque
 
 		go func(name string, hndl func(context.Context, *github.PullRequestReviewCommentEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/PullRequestReviewComment/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q PullRequestReviewComment handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -883,7 +956,11 @@ func handlePush(ctx context.Context, event *github.PushEvent) error {
 
 		go func(name string, hndl func(context.Context, *github.PushEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/Push/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q Push handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -927,7 +1004,11 @@ func handleRelease(ctx context.Context, event *github.ReleaseEvent) error {
 
 		go func(name string, hndl func(context.Context, *github.ReleaseEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/Release/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q Release handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -971,7 +1052,11 @@ func handleRepository(ctx context.Context, event *github.RepositoryEvent) error 
 
 		go func(name string, hndl func(context.Context, *github.RepositoryEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/Repository/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q Repository handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1015,7 +1100,11 @@ func handleStatus(ctx context.Context, event *github.StatusEvent) error {
 
 		go func(name string, hndl func(context.Context, *github.StatusEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/Status/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q Status handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1059,7 +1148,11 @@ func handleTeamAdd(ctx context.Context, event *github.TeamAddEvent) error {
 
 		go func(name string, hndl func(context.Context, *github.TeamAddEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/TeamAdd/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q TeamAdd handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1103,7 +1196,11 @@ func handleWatch(ctx context.Context, event *github.WatchEvent) error {
 
 		go func(name string, hndl func(context.Context, *github.WatchEvent) error) {
 			defer wg.Done()
-			if err := hndl(ctx, event); err != nil {
+
+			span := trace.FromContext(ctx).NewChild("/Watch/" + name)
+			defer span.Finish()
+
+			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
 				ch <- fmt.Errorf("%q Watch handler: %v", name, err)
 			}
 		}(name, hndl)
