@@ -40,7 +40,7 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 	}
 
 	// A milestone has already been set.
-	if i.Milestone != nil {
+	if i.Issue.Milestone != nil {
 		return nil
 	}
 
