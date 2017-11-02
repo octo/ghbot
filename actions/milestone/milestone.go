@@ -18,7 +18,7 @@ func init() {
 }
 
 func handler(ctx context.Context, e *github.PullRequestEvent) error {
-	if e.GetAction() != "opened" {
+	if a := e.GetAction(); a != "opened" && a != "edited" {
 		return nil
 	}
 
