@@ -113,7 +113,7 @@ func (c *Client) CreateStatus(ctx context.Context, name, state, desc, ref string
 
 func (c *Client) Milestones(ctx context.Context) (map[string]int, error) {
 	var (
-		ret  map[string]int
+		ret  = make(map[string]int)
 		opts github.MilestoneListOptions
 	)
 
@@ -124,7 +124,7 @@ func (c *Client) Milestones(ctx context.Context) (map[string]int, error) {
 		}
 
 		for _, m := range ms {
-			ret[m.GetTitle()] = m.GetID()
+			ret[m.GetTitle()] = m.GetNumber()
 		}
 
 		if res.NextPage == 0 {
