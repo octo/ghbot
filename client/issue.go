@@ -37,5 +37,8 @@ func (i *Issue) Milestone(ctx context.Context, id int) error {
 	_, _, err := i.client.Issues.Edit(ctx, i.client.owner, i.client.repo, i.Number(), &github.IssueRequest{
 		Milestone: github.Int(id),
 	})
-	return err
+	if err != nil {
+		return fmt.Errorf("Issues.Edit(%d, {Milestone: %d}): %v", i.Number(), id, err)
+	}
+	return nil
 }
