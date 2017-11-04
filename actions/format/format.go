@@ -8,7 +8,6 @@ import (
 	"sort"
 	"strings"
 	"sync"
-	"time"
 
 	"cloud.google.com/go/trace"
 	"github.com/google/go-github/github"
@@ -156,9 +155,6 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 }
 
 func checkFile(ctx context.Context, pr *client.PR, f client.PRFile, stage *client.Stage) (bool, error) {
-	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
-	defer cancel()
-
 	got, err := pr.Blob(ctx, f.SHA)
 	if err != nil {
 		return false, err
