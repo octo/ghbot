@@ -129,3 +129,26 @@ func (pr *PR) Blob(ctx context.Context, sha string) (string, error) {
 
 	return string(c), nil
 }
+
+func (pr *PR) Reviews(ctx context.Context) ([]*github.PullRequestReview, error) {
+	var (
+		opts = &github.ListOptions{}
+		ret  []*github.PullRequestReview
+	)
+
+	for {
+		revs, res, err := pr.client.PullRequests.ListReviews(ctx, pr.client.owner, pr.client.repo, pr.Number(), opts)
+		if err != nil {
+			return nil, fmt.Errorf("PullRequests.ListReviews(%v): %v", pr, err)
+		}
+
+		ret = append(ret, revs...)
+
+		if res.NextPage == 0 {
+			break
+		}
+		opts.Page = res.NextPage
+	}
+
+	return ret, nil
+}
