@@ -48,17 +48,35 @@ func processStatusEvent(ctx context.Context, event *github.StatusEvent) error {
 }
 
 // process merges a pull request, if:
-// * Is has not already been merged.
-// * All required checks have succeeded.
-// * The overall state is "success".
-// * There are no merge conflicts.
+// * It it still open and has not already been merged.
 // * Is has the Automerge label.
-// TODO(octo): check that there is no "changes requested" review.
+// * There are no outstanding reviews (CHANGES_REQUESTED or PENDING).
+// * The overall state is "success".
+// * All required checks have succeeded.
+// * There are no merge conflicts.
 func process(ctx context.Context, pr *client.PR) error {
 	log.Debugf(ctx, "checking if %v can be automerged", pr)
 
 	if pr.GetMerged() || pr.GetState() != "open" {
 		log.Debugf(ctx, "automerge: no, not open")
+		return nil
+	}
+
+	issue, err := pr.Issue(ctx)
+	if err != nil {
+		return err
+	}
+
+	if !issue.HasLabel(automergeLabel) {
+		log.Debugf(ctx, "automerge: no, does not have the %q label", automergeLabel)
+		return nil
+	}
+
+	if ok, err := allReviewsFinished(ctx, pr); !ok || err != nil {
+		if err != nil {
+			return err
+		}
+		log.Debugf(ctx, "automerge: no, there are unfinished reviews")
 		return nil
 	}
 
@@ -93,18 +111,24 @@ func process(ctx context.Context, pr *client.PR) error {
 		return nil
 	}
 
-	issue, err := pr.Issue(ctx)
-	if err != nil {
-		return err
-	}
-
-	if !issue.HasLabel(automergeLabel) {
-		log.Debugf(ctx, "automerge: no, does not have the %q label", automergeLabel)
-		return nil
-	}
-
 	log.Infof(ctx, "merging %v", pr)
 	title := fmt.Sprintf("Auto-Merge pull request %v from %s/%s", pr, pr.Head.User.GetLogin(), pr.Head.GetRef())
 	msg := fmt.Sprintf("Automatically merged due to %q label", automergeLabel)
 	return pr.Merge(ctx, title, msg)
+}
+
+func allReviewsFinished(ctx context.Context, pr *client.PR) (bool, error) {
+	revs, err := pr.Reviews(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	for _, r := range revs {
+		/* Possible states are APPROVE, CHANGES_REQUESTED, COMMENT and PENDING */
+		if s := r.GetState(); s == "PENDING" || s == "CHANGES_REQUESTED" {
+			return false, nil
+		}
+	}
+
+	return true, nil
 }
