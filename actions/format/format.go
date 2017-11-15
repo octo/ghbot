@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
 
 	"cloud.google.com/go/trace"
 	"github.com/google/go-github/github"
@@ -174,6 +175,10 @@ func checkFile(ctx context.Context, pr *client.PR, f client.PRFile, stage *clien
 }
 
 func format(ctx context.Context, in string) (string, error) {
+	// matches clang-format-gae's timeout.
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
 	req, err := http.NewRequest(http.MethodPost, "https://clang-format.appspot.com/", strings.NewReader(in))
 	if err != nil {
 		return "", fmt.Errorf("NewRequest(): %v", err)
