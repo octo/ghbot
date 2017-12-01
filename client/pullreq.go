@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"github.com/google/go-github/github"
+	"github.com/octo/retry"
 )
 
 type PR struct {
@@ -26,21 +27,31 @@ func (pr *PR) String() string {
 	return fmt.Sprintf("#%d", pr.Number())
 }
 
+// fetchMergeable gets the pull request from the API and returns an error if
+// the "mergeable" field is not set.
+func (pr *PR) fetchMergeable(ctx context.Context) error {
+	fullPR, _, err := pr.client.PullRequests.Get(ctx, pr.client.owner, pr.client.repo, pr.Number())
+	if err != nil {
+		return err
+	}
+	pr.PullRequest = fullPR
+
+	if pr.PullRequest.Mergeable == nil {
+		log.Printf(`PR %v: unable to determine state of the "Mergeable" flag`, pr)
+		return errors.New(`unable to determine state of the "Mergeable" flag`)
+	}
+
+	return nil
+}
+
 // Mergeable returns true if the pull request can be merged without conflicts.
 func (pr *PR) Mergeable(ctx context.Context) (bool, error) {
-	if pr.PullRequest.Mergeable == nil {
-		// the "Mergeable" field is not always populated, e.g. by the
-		// List() call, so retrieve the PR information again …
-		fullPR, _, err := pr.client.PullRequests.Get(ctx, pr.client.owner, pr.client.repo, pr.Number())
-		if err != nil {
-			return false, err
-		}
-		pr.PullRequest = fullPR
+	if pr.PullRequest.Mergeable != nil {
+		return *pr.PullRequest.Mergeable, nil
+	}
 
-		if pr.PullRequest.Mergeable == nil {
-			log.Printf(`PR %v: unable to determine state of the "Mergeable" flag`, pr)
-			return false, errors.New(`unable to determine state of the "Mergeable" flag`)
-		}
+	if err := retry.Do(ctx, pr.fetchMergeable); err != nil {
+		return false, err
 	}
 
 	return *pr.PullRequest.Mergeable, nil
