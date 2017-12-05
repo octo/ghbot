@@ -20,6 +20,7 @@ import (
 
 const (
 	checkName = "clang-format"
+	formatURL = "https://format.collectd.org/"
 )
 
 var (
@@ -189,14 +190,13 @@ func format(ctx context.Context, in string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequest(http.MethodPost, "https://clang-format.appspot.com/", strings.NewReader(in))
+	req, err := http.NewRequest(http.MethodPost, formatURL, strings.NewReader(in))
 	if err != nil {
 		return "", fmt.Errorf("NewRequest(): %v", err)
 	}
 
 	span := trace.FromContext(ctx).NewRemoteChild(req)
-	res, err := urlfetch.Client(ctx).Post("https://clang-format.appspot.com/",
-		http.DetectContentType([]byte(in)), strings.NewReader(in))
+	res, err := urlfetch.Client(ctx).Post(formatURL, http.DetectContentType([]byte(in)), strings.NewReader(in))
 	span.Finish()
 	if err != nil {
 		return "", err
