@@ -22,6 +22,16 @@ const (
 	checkName = "clang-format"
 )
 
+var (
+	suffixes = []string{
+		".c",
+		".cc",
+		".h",
+		".java",
+		".proto",
+	}
+)
+
 func init() {
 	event.PullRequestHandler("format", processPullRequestEvent)
 }
@@ -65,7 +75,7 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 
 	var total int
 	for _, f := range files {
-		if !hasAnySuffix(f.Filename, []string{".c", ".h", ".proto"}) {
+		if !hasAnySuffix(f.Filename, suffixes) {
 			continue
 		}
 
