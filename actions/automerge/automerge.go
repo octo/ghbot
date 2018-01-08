@@ -25,7 +25,11 @@ func init() {
 }
 
 func processPullRequestEvent(ctx context.Context, event *github.PullRequestEvent) error {
-	c := client.New(ctx, client.DefaultOwner, client.DefaultRepo)
+	c, err := client.New(ctx, client.DefaultOwner, client.DefaultRepo)
+	if err != nil {
+		return err
+	}
+
 	return process(ctx, c.WrapPR(event.PullRequest))
 }
 
@@ -34,7 +38,10 @@ func processStatusEvent(ctx context.Context, event *github.StatusEvent) error {
 		return nil
 	}
 
-	c := client.New(ctx, client.DefaultOwner, client.DefaultRepo)
+	c, err := client.New(ctx, client.DefaultOwner, client.DefaultRepo)
+	if err != nil {
+		return err
+	}
 
 	pr, err := c.PullRequestBySHA(ctx, event.GetSHA())
 	if err == os.ErrNotExist {

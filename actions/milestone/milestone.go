@@ -23,7 +23,11 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 		return nil
 	}
 
-	c := client.New(ctx, client.DefaultOwner, client.DefaultRepo)
+	c, err := client.New(ctx, client.DefaultOwner, client.DefaultRepo)
+	if err != nil {
+		return err
+	}
+
 	pr := c.WrapPR(e.PullRequest)
 
 	log.Debugf(ctx, "checking if a milestone should be set for %v", pr)
