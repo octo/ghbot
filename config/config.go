@@ -8,7 +8,7 @@ import (
 )
 
 type credentials struct {
-	SecretKey   []byte `datastore:",noindex"`
+	SecretKey   string `datastore:",noindex"`
 	AccessToken string `datastore:",noindex"`
 }
 
@@ -36,7 +36,7 @@ func SecretKey(ctx context.Context) ([]byte, error) {
 		return nil, err
 	}
 
-	return cachedCreds.SecretKey, nil
+	return []byte(cachedCreds.SecretKey), nil
 }
 
 // AccessToken returns the access token used to authenticate requests to Github.
