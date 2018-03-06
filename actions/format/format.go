@@ -59,7 +59,11 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 		return nil
 	}
 
-	c := client.New(ctx, client.DefaultOwner, client.DefaultRepo)
+	c, err := client.New(ctx, client.DefaultOwner, client.DefaultRepo)
+	if err != nil {
+		return err
+	}
+
 	pr := c.WrapPR(e.PullRequest)
 	ref := pr.Head.GetSHA()
 

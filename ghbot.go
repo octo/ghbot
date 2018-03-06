@@ -7,6 +7,7 @@ import (
 
 	"cloud.google.com/go/trace"
 	"github.com/google/go-github/github"
+	"github.com/octo/ghbot/config"
 	"github.com/octo/ghbot/event"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
@@ -17,8 +18,6 @@ import (
 	_ "github.com/octo/ghbot/actions/format"
 	_ "github.com/octo/ghbot/actions/milestone"
 )
-
-var secretKey = []byte("@SECRET@")
 
 func init() {
 	http.HandleFunc("/", handler)
@@ -60,6 +59,13 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func contextHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	secretKey, err := config.SecretKey(ctx)
+	if err != nil {
+		log.Errorf(ctx, "SecretKey: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return nil
+	}
+
 	payload, err := github.ValidatePayload(r, secretKey)
 	if err != nil {
 		log.Errorf(ctx, "ValidatePayload: %v", err)

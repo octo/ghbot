@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/google/go-github/github"
+	"github.com/octo/ghbot/config"
 	"golang.org/x/oauth2"
 	"google.golang.org/appengine/log"
 )
@@ -31,13 +32,18 @@ type Client struct {
 	*github.Client
 }
 
-func New(ctx context.Context, owner, repo string) *Client {
+func New(ctx context.Context, owner, repo string) (*Client, error) {
+	accessToken, err := config.AccessToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Client{
 		owner: owner,
 		repo:  repo,
 		Client: github.NewClient(oauth2.NewClient(ctx,
 			oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken}))),
-	}
+	}, nil
 }
 
 func (c *Client) Issue(ctx context.Context, number int) (*Issue, error) {
