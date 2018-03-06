@@ -23,8 +23,6 @@ const (
 	StatusPending = "pending"
 )
 
-var accessToken = "@SECRET@"
-
 type Client struct {
 	owner string
 	repo  string
