@@ -3,14 +3,17 @@ package client
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"regexp"
 	"strconv"
 
 	"github.com/google/go-github/github"
 	"github.com/octo/ghbot/config"
+	"github.com/octo/retry"
 	"golang.org/x/oauth2"
 	"google.golang.org/appengine/log"
+	"google.golang.org/appengine/urlfetch"
 )
 
 const (
@@ -36,11 +39,21 @@ func New(ctx context.Context, owner, repo string) (*Client, error) {
 		return nil, err
 	}
 
+	t := &retry.Transport{
+		RoundTripper: &oauth2.Transport{
+			Source: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken}),
+			Base: &urlfetch.Transport{
+				Context: ctx,
+			},
+		},
+	}
+
 	return &Client{
 		owner: owner,
 		repo:  repo,
-		Client: github.NewClient(oauth2.NewClient(ctx,
-			oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken}))),
+		Client: github.NewClient(&http.Client{
+			Transport: t,
+		}),
 	}, nil
 }
 
