@@ -125,17 +125,43 @@ func process(ctx context.Context, pr *client.PR) error {
 }
 
 func allReviewsFinished(ctx context.Context, pr *client.PR) (bool, error) {
+	reviews := map[string]string{}
+	for _, u := range pr.RequestedReviewers {
+		name := u.GetLogin()
+		if name == "" {
+			continue
+		}
+
+		reviews[name] = "REQUESTED"
+	}
+
 	revs, err := pr.Reviews(ctx)
 	if err != nil {
 		return false, err
 	}
 
 	for _, r := range revs {
-		/* Possible states are APPROVE, CHANGES_REQUESTED, COMMENT and PENDING */
-		if s := r.GetState(); s == "PENDING" || s == "CHANGES_REQUESTED" {
-			return false, nil
+		name := r.GetUser().GetLogin()
+		state := r.GetState()
+		if name == "" || state == "" {
+			continue
+		}
+
+		reviews[name] = state
+	}
+
+	// To *enforce* reviews, initialize with:
+	// result := len(reviews) != 0
+
+	result := true
+	for name, state := range reviews {
+		if state == "APPROVED" {
+			log.Debugf(ctx, "Pull request %v approved by %s", pr, name)
+		} else {
+			log.Debugf(ctx, "Review of %v by %s is in state %q", pr, name, state)
+			result = false
 		}
 	}
 
-	return true, nil
+	return result, nil
 }
