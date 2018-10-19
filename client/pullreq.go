@@ -5,10 +5,10 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/google/go-github/github"
 	"github.com/octo/retry"
+	"google.golang.org/appengine/log"
 )
 
 type PR struct {
@@ -37,7 +37,6 @@ func (pr *PR) fetchMergeable(ctx context.Context) error {
 	pr.PullRequest = fullPR
 
 	if pr.PullRequest.Mergeable == nil {
-		log.Printf(`PR %v: unable to determine state of the "Mergeable" flag`, pr)
 		return errors.New(`unable to determine state of the "Mergeable" flag`)
 	}
 
@@ -69,8 +68,8 @@ func (pr *PR) Merge(ctx context.Context, title, msg string) error {
 		return err
 	}
 
-	if res.Merged == nil || !*res.Merged {
-		log.Printf("did not merge %v: %s", pr, *res.Message)
+	if !res.GetMerged() {
+		log.Warningf(ctx, "did not merge %v: %s", pr, res.GetMessage())
 		return nil
 	}
 
