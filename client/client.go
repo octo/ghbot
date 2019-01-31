@@ -122,7 +122,7 @@ func (c *Client) CreateStatus(ctx context.Context, name, state, desc, ref string
 	_, _, err := c.Repositories.CreateStatus(ctx, c.owner, c.repo, ref, &github.RepoStatus{
 		State:       github.String(state),
 		Description: github.String(desc),
-		Context:     github.String("clang-format"),
+		Context:     github.String(name),
 	})
 
 	return err
