@@ -25,7 +25,7 @@ const (
 )
 
 var (
-	logEntryRE = regexp.MustCompile(`^(?i:ChangeLog)\s*=\s*(\S.*)`)
+	logEntryRE = regexp.MustCompile(`(?m)^(?i:ChangeLog)\s*=\s*(\S.*)`)
 )
 
 func init() {
