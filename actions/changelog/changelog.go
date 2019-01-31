@@ -1,6 +1,6 @@
 // Package changelog ensures that a pull request contians changelog information.
 //
-// Users may add `ChangeLog=[text]` to the pull request description. Text is a
+// Users may add `ChangeLog: [text]` to the pull request description. Text is a
 // single change log entry along the lines of "Foo plugin: Implemented a
 // thing.".
 //
@@ -25,7 +25,7 @@ const (
 )
 
 var (
-	logEntryRE = regexp.MustCompile(`(?m)^(?i:ChangeLog)\s*=\s*(\S.*)`)
+	logEntryRE = regexp.MustCompile(`(?m)^(?i:ChangeLog):\s*(\S.*)`)
 )
 
 func init() {
@@ -65,5 +65,5 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 		return c.CreateStatus(ctx, checkName, client.StatusSuccess, "ChangeLog information found", ref)
 	}
 
-	return c.CreateStatus(ctx, checkName, client.StatusFailure, `Please add a "ChangeLog=..." line to your pull request description`, ref)
+	return c.CreateStatus(ctx, checkName, client.StatusFailure, `Please add a "ChangeLog: …" line to your pull request description`, ref)
 }

@@ -10,12 +10,15 @@ func TestRegexp(t *testing.T) {
 		want bool
 	}{
 		{"Summary\n", false},
-		{"Summary\nChangeLog=some string", true},
-		{"Summary\nChangeLog = some string", true},
-		{"Summary\nchangelog=some string", true},
-		{"Summary\nchangelog = some string", true},
-		{"Summary\nChange Log=some string", false},
-		{"Summary\nChange Log = some string", false},
+		{"Summary\nChangeLog:some string", true},
+		{"Summary\nChangeLog: some string", true},
+		{"Summary\nChangeLog:  some string", true},
+		{"Summary\nchangelog:some string", true},
+		{"Summary\nchangelog: some string", true},
+		{"Summary\nchangelog:  some string", true},
+		{"Summary\nChange Log:some string", false},
+		{"Summary\nChange Log: some string", false},
+		{"Summary\nChange Log:  some string", false},
 	}
 
 	for _, tc := range cases {
