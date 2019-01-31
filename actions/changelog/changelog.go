@@ -37,7 +37,13 @@ func hasLogEntry(pr *client.PR) bool {
 }
 
 func handler(ctx context.Context, e *github.PullRequestEvent) error {
-	if a := e.GetAction(); a != "opened" && a != "edited" {
+	triggerOn := map[string]bool{
+		"edited":    true,
+		"labeled":   true,
+		"opened":    true,
+		"unlabeled": true,
+	}
+	if !triggerOn[e.GetAction()] {
 		return nil
 	}
 
