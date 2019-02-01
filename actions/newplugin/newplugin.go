@@ -1,4 +1,4 @@
-package automerge
+package newplugin
 
 import (
 	"context"
@@ -16,6 +16,7 @@ import (
 const (
 	newLabel         = "New plugin"
 	defaultMilestone = "Features"
+	detailsURL       = ""
 )
 
 var requiredFiles = []string{
@@ -131,5 +132,5 @@ func checkFiles(ctx context.Context, c *client.Client, pr *client.PR) error {
 		msg = "Document new plugin in: " + strings.Join(want, ", ")
 	}
 
-	return c.CreateStatus(ctx, name, status, msg, ref)
+	return c.CreateStatus(ctx, name, status, msg, detailsURL, ref)
 }

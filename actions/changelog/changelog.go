@@ -22,6 +22,7 @@ import (
 const (
 	checkName     = "ChangeLog"
 	unlistedLabel = "Unlisted Change"
+	detailsURL    = "https://github.com/collectd/collectd/blob/master/CONTRIBUTING.md#changelog"
 )
 
 var (
@@ -64,12 +65,12 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 	ref := pr.Head.GetSHA()
 
 	if i.HasLabel(unlistedLabel) {
-		return c.CreateStatus(ctx, checkName, client.StatusSuccess, "Pull request not included in ChangeLog", ref)
+		return c.CreateStatus(ctx, checkName, client.StatusSuccess, "Pull request not included in ChangeLog", detailsURL, ref)
 	}
 	if hasLogEntry(pr) {
 		// TODO(octo): Maybe echo the parsed information back to the user?
-		return c.CreateStatus(ctx, checkName, client.StatusSuccess, "ChangeLog information found", ref)
+		return c.CreateStatus(ctx, checkName, client.StatusSuccess, "ChangeLog information found", detailsURL, ref)
 	}
 
-	return c.CreateStatus(ctx, checkName, client.StatusFailure, `Please add a "ChangeLog: …" line to your pull request description`, ref)
+	return c.CreateStatus(ctx, checkName, client.StatusFailure, `Please add a "ChangeLog: …" line to your pull request description`, detailsURL, ref)
 }

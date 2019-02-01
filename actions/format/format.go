@@ -19,8 +19,9 @@ import (
 )
 
 const (
-	checkName = "clang-format"
-	formatURL = "https://format.collectd.org/"
+	checkName  = "clang-format"
+	formatURL  = "https://format.collectd.org/"
+	detailsURL = ""
 )
 
 var (
@@ -110,7 +111,7 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 		return nil
 	}
 
-	if err := c.CreateStatus(ctx, checkName, client.StatusPending, "Checking formatting ...", ref); err != nil {
+	if err := c.CreateStatus(ctx, checkName, client.StatusPending, "Checking formatting ...", detailsURL, ref); err != nil {
 		return err
 	}
 
@@ -130,7 +131,7 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 	}
 
 	if err != nil {
-		c.CreateStatus(ctx, checkName, client.StatusError, err.Error(), ref)
+		c.CreateStatus(ctx, checkName, client.StatusError, err.Error(), detailsURL, ref)
 		return err
 	}
 
@@ -139,7 +140,7 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 		if total != 1 {
 			msg = fmt.Sprintf("%d files are correctly formatted", total)
 		}
-		return c.CreateStatus(ctx, checkName, client.StatusSuccess, msg, ref)
+		return c.CreateStatus(ctx, checkName, client.StatusSuccess, msg, detailsURL, ref)
 	}
 
 	msg := "Please run: contrib/format.sh " + strings.Join(needFormatting, " ")
@@ -150,7 +151,7 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 	}
 
 	sort.Strings(needFormatting)
-	if err := c.CreateStatus(ctx, checkName, client.StatusFailure, msg, ref); err != nil {
+	if err := c.CreateStatus(ctx, checkName, client.StatusFailure, msg, detailsURL, ref); err != nil {
 		return err
 	}
 

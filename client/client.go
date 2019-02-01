@@ -118,13 +118,17 @@ func (c *Client) WrapPR(pr *github.PullRequest) *PR {
 	}
 }
 
-func (c *Client) CreateStatus(ctx context.Context, name, state, desc, ref string) error {
-	_, _, err := c.Repositories.CreateStatus(ctx, c.owner, c.repo, ref, &github.RepoStatus{
-		State:       github.String(state),
-		Description: github.String(desc),
-		Context:     github.String(name),
-	})
+func (c *Client) CreateStatus(ctx context.Context, name, state, desc, url, ref string) error {
+	req := &github.RepoStatus{
+		State:       &state,
+		Description: &desc,
+		Context:     &name,
+	}
+	if url != "" {
+		req.URL = &url
+	}
 
+	_, _, err := c.Repositories.CreateStatus(ctx, c.owner, c.repo, ref, req)
 	return err
 }
 
