@@ -20,7 +20,6 @@ const (
 )
 
 var requiredFiles = []string{
-	"README",
 	"src/collectd.conf.pod",
 	"src/collectd.conf.in",
 }
