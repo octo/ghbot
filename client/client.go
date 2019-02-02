@@ -125,7 +125,7 @@ func (c *Client) CreateStatus(ctx context.Context, name, state, desc, url, ref s
 		Context:     &name,
 	}
 	if url != "" {
-		req.URL = &url
+		req.TargetURL = &url
 	}
 
 	_, _, err := c.Repositories.CreateStatus(ctx, c.owner, c.repo, ref, req)
