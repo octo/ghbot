@@ -14,6 +14,7 @@ import (
 )
 
 const (
+	checkName        = "New plugin"
 	newLabel         = "New plugin"
 	defaultMilestone = "Features"
 	detailsURL       = ""
@@ -122,7 +123,6 @@ func checkFiles(ctx context.Context, c *client.Client, pr *client.PR) error {
 		want = append(want, f)
 	}
 
-	name := "new-plugin-docs"
 	ref := pr.GetHead().GetSHA()
 	status := client.StatusSuccess
 	msg := "All required files touched"
@@ -131,5 +131,5 @@ func checkFiles(ctx context.Context, c *client.Client, pr *client.PR) error {
 		msg = "Document new plugin in: " + strings.Join(want, ", ")
 	}
 
-	return c.CreateStatus(ctx, name, status, msg, detailsURL, ref)
+	return c.CreateStatus(ctx, checkName, status, msg, detailsURL, ref)
 }
