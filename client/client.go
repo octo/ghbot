@@ -156,3 +156,12 @@ func (c *Client) Milestones(ctx context.Context) (map[string]int, error) {
 
 	return ret, nil
 }
+
+func (c *Client) FormatUser(ctx context.Context, login string) string {
+	u, _, err := c.Users.Get(ctx, login)
+	if err != nil || u.GetName() == "" {
+		return "@" + login
+	}
+
+	return fmt.Sprintf("@%s (%s)", login, u.GetName())
+}

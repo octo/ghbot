@@ -34,19 +34,14 @@ func init() {
 	event.PullRequestHandler("changelog", handler)
 }
 
-func formatEntry(pr *client.PR) (string, bool) {
+func formatEntry(ctx context.Context, c *client.Client, pr *client.PR) (string, bool) {
 	m := logEntryRE.FindStringSubmatch(pr.GetBody())
 	if len(m) < 2 {
 		return "", false
 	}
 	msg := m[1]
 
-	user := pr.GetUser().GetName()
-	if user == "" {
-		user = "@" + pr.GetUser().GetLogin()
-	}
-
-	return fmt.Sprintf("%s Thanks to %s. %v", msg, user, pr), true
+	return fmt.Sprintf("%s Thanks to %s. %v", msg, c.FormatUser(ctx, pr.GetUser().GetLogin()), pr), true
 }
 
 func handler(ctx context.Context, e *github.PullRequestEvent) error {
@@ -79,7 +74,7 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 		return c.CreateStatus(ctx, checkName, client.StatusSuccess, "Pull request not included in ChangeLog", detailsURL, ref)
 	}
 
-	if entry, ok := formatEntry(pr); ok {
+	if entry, ok := formatEntry(ctx, c, pr); ok {
 		msg := fmt.Sprintf("Preview: %q", entry)
 		return c.CreateStatus(ctx, checkName, client.StatusSuccess, msg, detailsURL, ref)
 	}
