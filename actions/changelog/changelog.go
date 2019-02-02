@@ -11,6 +11,7 @@ package changelog
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 
 	"github.com/google/go-github/github"
@@ -33,8 +34,19 @@ func init() {
 	event.PullRequestHandler("changelog", handler)
 }
 
-func hasLogEntry(pr *client.PR) bool {
-	return logEntryRE.MatchString(pr.GetBody())
+func formatEntry(pr *client.PR) (string, bool) {
+	m := logEntryRE.FindStringSubmatch(pr.GetBody())
+	if len(m) < 2 {
+		return "", false
+	}
+	msg := m[1]
+
+	user := pr.GetUser().GetName()
+	if user == "" {
+		user = "@" + pr.GetUser().GetLogin()
+	}
+
+	return fmt.Sprintf("%s Thanks to %s. %v", msg, user, pr), true
 }
 
 func handler(ctx context.Context, e *github.PullRequestEvent) error {
@@ -54,6 +66,7 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 	}
 
 	pr := c.WrapPR(e.PullRequest)
+	ref := pr.Head.GetSHA()
 	log.Debugf(ctx, "checking if %v contains a changelog note", pr)
 
 	// Only issues report the label :(
@@ -62,14 +75,13 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 		return err
 	}
 
-	ref := pr.Head.GetSHA()
-
 	if i.HasLabel(unlistedLabel) {
 		return c.CreateStatus(ctx, checkName, client.StatusSuccess, "Pull request not included in ChangeLog", detailsURL, ref)
 	}
-	if hasLogEntry(pr) {
-		// TODO(octo): Maybe echo the parsed information back to the user?
-		return c.CreateStatus(ctx, checkName, client.StatusSuccess, "ChangeLog information found", detailsURL, ref)
+
+	if entry, ok := formatEntry(pr); ok {
+		msg := fmt.Sprintf("Preview: %q", entry)
+		return c.CreateStatus(ctx, checkName, client.StatusSuccess, msg, detailsURL, ref)
 	}
 
 	return c.CreateStatus(ctx, checkName, client.StatusFailure, `Please add a "ChangeLog: …" line to your pull request description`, detailsURL, ref)
