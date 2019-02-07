@@ -15,8 +15,10 @@ const automergeLabel = "Automerge"
 
 // requiredChecks is a list of all status "contexts" that must signal success
 // before a PR can automatically be merged.
+// TODO(octo): may be redundant with the "Require status checks to pass before merging" setting.
 var requiredChecks = []string{
-	"pull-requests-github_trigger-aggregation",
+	"ChangeLog",
+	"continuous-integration/travis-ci/pr",
 }
 
 func init() {
