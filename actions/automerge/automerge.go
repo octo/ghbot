@@ -23,6 +23,7 @@ var requiredChecks = []string{
 
 func init() {
 	event.PullRequestHandler("automerge", processPullRequestEvent)
+	event.PullRequestReviewHandler("automerge", processReviewEvent)
 	event.StatusHandler("automerge", processStatusEvent)
 }
 
@@ -33,6 +34,15 @@ func processPullRequestEvent(ctx context.Context, event *github.PullRequestEvent
 	}
 
 	return process(ctx, c.WrapPR(event.PullRequest))
+}
+
+func processReviewEvent(ctx context.Context, e *github.PullRequestReviewEvent) error {
+	c, err := client.New(ctx, client.DefaultOwner, client.DefaultRepo)
+	if err != nil {
+		return err
+	}
+
+	return process(ctx, c.WrapPR(e.GetPullRequest()))
 }
 
 func processStatusEvent(ctx context.Context, event *github.StatusEvent) error {
