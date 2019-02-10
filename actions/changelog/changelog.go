@@ -46,10 +46,11 @@ func formatEntry(ctx context.Context, c *client.Client, pr *client.PR) (string, 
 
 func handler(ctx context.Context, e *github.PullRequestEvent) error {
 	triggerOn := map[string]bool{
-		"edited":    true,
-		"labeled":   true,
-		"opened":    true,
-		"unlabeled": true,
+		"edited":      true,
+		"labeled":     true,
+		"opened":      true,
+		"synchronize": true,
+		"unlabeled":   true,
 	}
 	if !triggerOn[e.GetAction()] {
 		return nil
