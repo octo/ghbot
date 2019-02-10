@@ -13,6 +13,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/google/go-github/github"
 	"github.com/octo/ghbot/client"
@@ -39,7 +40,7 @@ func formatEntry(ctx context.Context, c *client.Client, pr *client.PR) (string, 
 	if len(m) < 2 {
 		return "", false
 	}
-	msg := m[1]
+	msg := strings.TrimSpace(m[1])
 
 	return fmt.Sprintf("%s Thanks to %s. %v", msg, c.FormatUser(ctx, pr.GetUser().GetLogin()), pr), true
 }
