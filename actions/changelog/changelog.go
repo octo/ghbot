@@ -24,7 +24,7 @@ import (
 const (
 	checkName     = "ChangeLog"
 	unlistedLabel = "Unlisted Change"
-	detailsURL    = "https://github.com/collectd/collectd/blob/master/CONTRIBUTING.md#changelog"
+	detailsURL    = "https://github.com/collectd/collectd/blob/master/docs/CONTRIBUTING.md#changelog"
 )
 
 var (
