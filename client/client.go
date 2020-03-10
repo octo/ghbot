@@ -116,9 +116,11 @@ func (c *Client) WrapPR(pr *github.PullRequest) *PR {
 }
 
 func (c *Client) CreateStatus(ctx context.Context, name, state, desc, url, ref string) error {
+	const maxDescLen = 140
+
 	req := &github.RepoStatus{
 		State:       &state,
-		Description: &desc,
+		Description: github.String(trimLength(desc, maxDescLen)),
 		Context:     &name,
 	}
 	if url != "" {
@@ -161,4 +163,20 @@ func (c *Client) FormatUser(ctx context.Context, login string) string {
 	}
 
 	return fmt.Sprintf("@%s (%s)", login, u.GetName())
+}
+
+// trimLength returns s. If s contains more then "length" characters, it will
+// be trimmed and the last character is replaced with "…".
+func trimLength(s string, length uint) string {
+	if length == 0 {
+		return ""
+	}
+
+	chars := []rune(s)
+	if len(chars) <= int(length) {
+		return s
+	}
+
+	chars = append(chars[:length-1], '…')
+	return string(chars)
 }
