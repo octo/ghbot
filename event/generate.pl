@@ -9,33 +9,50 @@ use warnings;
 #   Follow
 #   ForkApply
 #   Gist
-#   Organization
-#   Team
 
 my @eventTypes = qw(
+    CheckRun
+    CheckSuite
     CommitComment
     Create
     Delete
+    DeployKey
     Deployment
     DeploymentStatus
     Fork
+    GitHubAppAuthorization
     Gollum
+    Installation
+    InstallationRepositories
     IssueComment
+    Issue
     Issues
     Label
+    MarketplacePurchase
     Member
     Membership
+    Meta
     Milestone
+    Organization
+    OrgBlock
     PageBuild
+    ProjectCard
+    ProjectColumn
+    Project
     Public
     PullRequest
     PullRequestReview
     PullRequestReviewComment
     Push
     Release
+    RepositoryDispatch
     Repository
+    RepositoryVulnerabilityAlert
+    Star
     Status
     TeamAdd
+    Team
+    User
     Watch
 );
 
