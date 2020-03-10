@@ -3,6 +3,7 @@ package newplugin
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 	"sync"
 
@@ -10,7 +11,6 @@ import (
 	"github.com/octo/ghbot/client"
 	"github.com/octo/ghbot/event"
 	"go.uber.org/multierr"
-	"google.golang.org/appengine/log"
 )
 
 const (
@@ -96,7 +96,7 @@ func setMilestone(ctx context.Context, c *client.Client, issue *client.Issue) er
 
 	id, ok := milestones[defaultMilestone]
 	if !ok {
-		log.Warningf(ctx, "unable to determine ID of milestone %q", defaultMilestone)
+		log.Printf("unable to determine ID of milestone %q", defaultMilestone)
 		return nil
 	}
 

@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"regexp"
@@ -12,8 +13,6 @@ import (
 	"github.com/octo/ghbot/config"
 	"github.com/octo/retry"
 	"golang.org/x/oauth2"
-	"google.golang.org/appengine/log"
-	"google.golang.org/appengine/urlfetch"
 )
 
 const (
@@ -42,9 +41,7 @@ func New(ctx context.Context, owner, repo string) (*Client, error) {
 	t := &retry.Transport{
 		RoundTripper: &oauth2.Transport{
 			Source: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken}),
-			Base: &urlfetch.Transport{
-				Context: ctx,
-			},
+			Base:   http.DefaultTransport,
 		},
 	}
 
@@ -92,7 +89,7 @@ func (c *Client) PullRequestBySHA(ctx context.Context, sha string) (*PR, error) 
 
 		number, err := strconv.Atoi(m[1])
 		if err != nil {
-			log.Errorf(ctx, "strconv.Atoi(%q): %v", m[1], err)
+			log.Printf("strconv.Atoi(%q): %v", m[1], err)
 			continue
 		}
 

@@ -5,11 +5,11 @@ package event // import "github.com/octo/ghbot/event"
 import (
 	"context"
 	"fmt"
+	"log"
 	"sync"
 
 	"cloud.google.com/go/trace"
 	"github.com/google/go-github/github"
-	"google.golang.org/appengine/log"
 )
 
 // Handle handles a webhook event.
@@ -102,7 +102,7 @@ func Handle(ctx context.Context, event interface{}) error {
 	case *github.WatchEvent:
 		return handleWatch(ctx, event)
 	default:
-		log.Errorf(ctx, "unimplemented event type: %T", event)
+		log.Printf("unimplemented event type: %T", event)
 	}
 
 	return nil
@@ -148,7 +148,7 @@ func handleCheckRun(ctx context.Context, event *github.CheckRunEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -196,7 +196,7 @@ func handleCheckSuite(ctx context.Context, event *github.CheckSuiteEvent) error 
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -244,7 +244,7 @@ func handleCommitComment(ctx context.Context, event *github.CommitCommentEvent) 
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -292,7 +292,7 @@ func handleCreate(ctx context.Context, event *github.CreateEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -340,7 +340,7 @@ func handleDelete(ctx context.Context, event *github.DeleteEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -388,7 +388,7 @@ func handleDeployKey(ctx context.Context, event *github.DeployKeyEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -436,7 +436,7 @@ func handleDeployment(ctx context.Context, event *github.DeploymentEvent) error 
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -484,7 +484,7 @@ func handleDeploymentStatus(ctx context.Context, event *github.DeploymentStatusE
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -532,7 +532,7 @@ func handleFork(ctx context.Context, event *github.ForkEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -580,7 +580,7 @@ func handleGitHubAppAuthorization(ctx context.Context, event *github.GitHubAppAu
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -628,7 +628,7 @@ func handleGollum(ctx context.Context, event *github.GollumEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -676,7 +676,7 @@ func handleInstallation(ctx context.Context, event *github.InstallationEvent) er
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -724,7 +724,7 @@ func handleInstallationRepositories(ctx context.Context, event *github.Installat
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -772,7 +772,7 @@ func handleIssueComment(ctx context.Context, event *github.IssueCommentEvent) er
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -820,7 +820,7 @@ func handleIssue(ctx context.Context, event *github.IssueEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -868,7 +868,7 @@ func handleIssues(ctx context.Context, event *github.IssuesEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -916,7 +916,7 @@ func handleLabel(ctx context.Context, event *github.LabelEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -964,7 +964,7 @@ func handleMarketplacePurchase(ctx context.Context, event *github.MarketplacePur
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1012,7 +1012,7 @@ func handleMember(ctx context.Context, event *github.MemberEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1060,7 +1060,7 @@ func handleMembership(ctx context.Context, event *github.MembershipEvent) error 
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1108,7 +1108,7 @@ func handleMeta(ctx context.Context, event *github.MetaEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1156,7 +1156,7 @@ func handleMilestone(ctx context.Context, event *github.MilestoneEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1204,7 +1204,7 @@ func handleOrganization(ctx context.Context, event *github.OrganizationEvent) er
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1252,7 +1252,7 @@ func handleOrgBlock(ctx context.Context, event *github.OrgBlockEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1300,7 +1300,7 @@ func handlePageBuild(ctx context.Context, event *github.PageBuildEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1348,7 +1348,7 @@ func handleProjectCard(ctx context.Context, event *github.ProjectCardEvent) erro
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1396,7 +1396,7 @@ func handleProjectColumn(ctx context.Context, event *github.ProjectColumnEvent) 
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1444,7 +1444,7 @@ func handleProject(ctx context.Context, event *github.ProjectEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1492,7 +1492,7 @@ func handlePublic(ctx context.Context, event *github.PublicEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1540,7 +1540,7 @@ func handlePullRequest(ctx context.Context, event *github.PullRequestEvent) erro
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1588,7 +1588,7 @@ func handlePullRequestReview(ctx context.Context, event *github.PullRequestRevie
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1636,7 +1636,7 @@ func handlePullRequestReviewComment(ctx context.Context, event *github.PullReque
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1684,7 +1684,7 @@ func handlePush(ctx context.Context, event *github.PushEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1732,7 +1732,7 @@ func handleRelease(ctx context.Context, event *github.ReleaseEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1780,7 +1780,7 @@ func handleRepositoryDispatch(ctx context.Context, event *github.RepositoryDispa
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1828,7 +1828,7 @@ func handleRepository(ctx context.Context, event *github.RepositoryEvent) error 
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1876,7 +1876,7 @@ func handleRepositoryVulnerabilityAlert(ctx context.Context, event *github.Repos
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1924,7 +1924,7 @@ func handleStar(ctx context.Context, event *github.StarEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -1972,7 +1972,7 @@ func handleStatus(ctx context.Context, event *github.StatusEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -2020,7 +2020,7 @@ func handleTeamAdd(ctx context.Context, event *github.TeamAddEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -2068,7 +2068,7 @@ func handleTeam(ctx context.Context, event *github.TeamEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -2116,7 +2116,7 @@ func handleUser(ctx context.Context, event *github.UserEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}
@@ -2164,7 +2164,7 @@ func handleWatch(ctx context.Context, event *github.WatchEvent) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}

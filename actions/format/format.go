@@ -14,8 +14,6 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/octo/ghbot/client"
 	"github.com/octo/ghbot/event"
-	"google.golang.org/appengine/log"
-	"google.golang.org/appengine/urlfetch"
 )
 
 const (
@@ -67,8 +65,6 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 
 	pr := c.WrapPR(e.PullRequest)
 	ref := pr.Head.GetSHA()
-
-	log.Debugf(ctx, "checking formatting of %v", pr)
 
 	files, err := pr.Files(ctx)
 	if err != nil {
@@ -125,7 +121,6 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 		}
 
 		if !s.ok {
-			log.Debugf(ctx, "%q needs formatting", s.Filename)
 			needFormatting = append(needFormatting, s.Filename)
 		}
 	}
@@ -147,7 +142,6 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 	// Description must be at most 140 characters.
 	if len(msg) > 139 {
 		msg = msg[:138] + "…"
-		log.Debugf(ctx, "len(msg) = %d", len(msg))
 	}
 
 	sort.Strings(needFormatting)
@@ -195,13 +189,13 @@ func format(ctx context.Context, in string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequest(http.MethodPost, formatURL, strings.NewReader(in))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, formatURL, strings.NewReader(in))
 	if err != nil {
 		return "", fmt.Errorf("NewRequest(): %v", err)
 	}
 
 	span := trace.FromContext(ctx).NewRemoteChild(req)
-	res, err := urlfetch.Client(ctx).Post(formatURL, http.DetectContentType([]byte(in)), strings.NewReader(in))
+	res, err := http.DefaultClient.Do(req)
 	span.Finish()
 	if err != nil {
 		return "", err

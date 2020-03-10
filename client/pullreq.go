@@ -5,10 +5,10 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/google/go-github/github"
 	"github.com/octo/retry"
-	"google.golang.org/appengine/log"
 )
 
 type PR struct {
@@ -69,7 +69,7 @@ func (pr *PR) Merge(ctx context.Context, title, msg string) error {
 	}
 
 	if !res.GetMerged() {
-		log.Warningf(ctx, "did not merge %v: %s", pr, res.GetMessage())
+		log.Printf("did not merge %v: %s", pr, res.GetMessage())
 		return nil
 	}
 

@@ -12,13 +12,13 @@ package changelog
 import (
 	"context"
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 
 	"github.com/google/go-github/github"
 	"github.com/octo/ghbot/client"
 	"github.com/octo/ghbot/event"
-	"google.golang.org/appengine/log"
 )
 
 const (
@@ -64,7 +64,7 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 
 	pr := c.WrapPR(e.PullRequest)
 	ref := pr.Head.GetSHA()
-	log.Debugf(ctx, "checking if %v contains a changelog note", pr)
+	log.Println("checking if", pr, "contains a changelog note")
 
 	// Only issues report the label :(
 	i, err := pr.Issue(ctx)

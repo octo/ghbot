@@ -11,7 +11,6 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/octo/ghbot/client"
 	"github.com/octo/ghbot/event"
-	"google.golang.org/appengine/log"
 )
 
 func init() {
@@ -30,13 +29,10 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 
 	pr := c.WrapPR(e.PullRequest)
 
-	log.Debugf(ctx, "checking if a milestone should be set for %v", pr)
-
 	ref := pr.PullRequest.Base.GetRef()
 
 	// This is likely a PR for the master branch.
 	if !strings.HasPrefix(ref, "collectd-") {
-		log.Debugf(ctx, "milestone: no, not a feature branch: %q", ref)
 		return nil
 	}
 	v := strings.TrimPrefix(ref, "collectd-")
@@ -49,7 +45,6 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 
 	// A milestone has already been set.
 	if i.Issue.Milestone != nil {
-		log.Debugf(ctx, "milestone: no, already set to %q", i.Issue.Milestone.GetTitle())
 		return nil
 	}
 
@@ -64,6 +59,5 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 		}
 	}
 
-	log.Debugf(ctx, "milestone: no, milestone %q not found", v)
 	return nil
 }

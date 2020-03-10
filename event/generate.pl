@@ -64,11 +64,11 @@ package event // import "github.com/octo/ghbot/event"
 import (
 	"context"
 	"fmt"
+	"log"
 	"sync"
 
 	"cloud.google.com/go/trace"
 	"github.com/google/go-github/github"
-	"google.golang.org/appengine/log"
 )
 
 // Handle handles a webhook event.
@@ -84,7 +84,7 @@ EOF
 }
 print <<'EOF';
 	default:
-		log.Errorf(ctx, "unimplemented event type: %T", event)
+		log.Printf("unimplemented event type: %T", event)
 	}
 
 	return nil
@@ -137,7 +137,7 @@ func handle${type}(ctx context.Context, event *github.${type}Event) error {
 	var lastErr error
 	for err := range ch {
 		if lastErr != nil {
-			log.Errorf(ctx, "%v", lastErr)
+			log.Print(lastErr)
 		}
 		lastErr = err
 	}

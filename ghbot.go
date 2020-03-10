@@ -1,9 +1,11 @@
-package ghbot
+package main
 
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 
 	"cloud.google.com/go/trace"
 	"github.com/google/go-github/github"
@@ -11,8 +13,6 @@ import (
 	"github.com/octo/ghbot/event"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
-	"google.golang.org/appengine"
-	"google.golang.org/appengine/log"
 
 	_ "github.com/octo/ghbot/actions/automerge"
 	_ "github.com/octo/ghbot/actions/changelog"
@@ -21,16 +21,25 @@ import (
 	_ "github.com/octo/ghbot/actions/newplugin"
 )
 
-func init() {
+func main() {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+		log.Printf("Defaulting to port %s", port)
+	}
+
 	http.HandleFunc("/", handler)
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
+		log.Fatalln("http.ListenAndServe:", err)
+	}
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	ctx := appengine.NewContext(r)
+	ctx := r.Context()
 
 	creds, err := google.FindDefaultCredentials(ctx, trace.ScopeTraceAppend)
 	if err != nil {
-		log.Criticalf(ctx, "google.FindDefaultCredentials(): %v", err)
+		log.Println("google.FindDefaultCredentials():", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -38,7 +47,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	traceClient, err := trace.NewClient(ctx, creds.ProjectID,
 		option.WithTokenSource(creds.TokenSource))
 	if err != nil {
-		log.Criticalf(ctx, "trace.NewClient(): %v", err)
+		log.Println("trace.NewClient():", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -54,7 +63,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := contextHandler(ctx, w, r); err != nil {
-		log.Errorf(ctx, "contextHandler: %v", err)
+		log.Println("contextHandler:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -63,14 +72,14 @@ func handler(w http.ResponseWriter, r *http.Request) {
 func contextHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	secretKey, err := config.SecretKey(ctx)
 	if err != nil {
-		log.Errorf(ctx, "SecretKey: %v", err)
+		log.Println("SecretKey:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return nil
 	}
 
 	payload, err := github.ValidatePayload(r, secretKey)
 	if err != nil {
-		log.Errorf(ctx, "ValidatePayload: %v", err)
+		log.Println("ValidatePayload:", err)
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return nil
 	}
@@ -82,7 +91,7 @@ func contextHandler(ctx context.Context, w http.ResponseWriter, r *http.Request)
 
 	e, err := github.ParseWebHook(whType, payload)
 	if err != nil {
-		log.Errorf(ctx, "ParseWebHook: %v", err)
+		log.Println("ParseWebHook:", err)
 		httpStatusUnprocessableEntity := 422
 		http.Error(w, err.Error(), httpStatusUnprocessableEntity)
 		return nil
