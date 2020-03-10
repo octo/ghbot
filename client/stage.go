@@ -16,7 +16,7 @@ type Stage struct {
 	ref    string
 	commit string
 
-	entries []github.TreeEntry
+	entries []*github.TreeEntry
 }
 
 func (c *Client) NewStage(pr *github.PullRequest) *Stage {
@@ -34,7 +34,7 @@ func (s *Stage) Add(path, content string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.entries = append(s.entries, github.TreeEntry{
+	s.entries = append(s.entries, &github.TreeEntry{
 		Path:    github.String(path),
 		Mode:    github.String("100644"),
 		Type:    github.String("blob"),
@@ -63,7 +63,7 @@ func (s *Stage) Commit(ctx context.Context, message string) error {
 	commit, _, err := s.git.CreateCommit(ctx, s.owner, s.repo, &github.Commit{
 		Message: github.String(message),
 		Tree:    commitTree,
-		Parents: []github.Commit{*baseCommit},
+		Parents: []*github.Commit{baseCommit},
 	})
 	if err != nil {
 		return err
