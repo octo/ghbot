@@ -3,8 +3,9 @@ package config
 
 import (
 	"context"
+	"os"
 
-	"google.golang.org/appengine/datastore"
+	"cloud.google.com/go/datastore"
 )
 
 type credentials struct {
@@ -19,10 +20,15 @@ func loadCreds(ctx context.Context) error {
 		return nil
 	}
 
-	k := datastore.NewKey(ctx, "credentials", "singleton", 0, nil)
+	// remove once https://code-review.googlesource.com/c/gocloud/+/53290 is merged.
+	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
+	client, err := datastore.NewClient(ctx, projectID)
+	if err != nil {
+		return err
+	}
 
 	var c credentials
-	if err := datastore.Get(ctx, k, &c); err != nil {
+	if err := client.Get(ctx, datastore.NameKey("credentials", "singleton", nil), &c); err != nil {
 		return err
 	}
 
