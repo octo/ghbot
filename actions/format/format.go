@@ -10,10 +10,11 @@ import (
 	"sync"
 	"time"
 
-	"cloud.google.com/go/trace"
+	"contrib.go.opencensus.io/exporter/stackdriver/propagation"
 	"github.com/google/go-github/github"
 	"github.com/octo/ghbot/client"
 	"github.com/octo/ghbot/event"
+	"go.opencensus.io/plugin/ochttp"
 )
 
 const (
@@ -185,14 +186,18 @@ func format(ctx context.Context, in string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, formatURL, strings.NewReader(in))
-	if err != nil {
-		return "", fmt.Errorf("NewRequest(): %v", err)
+	client := &http.Client{
+		Transport: &ochttp.Transport{
+			Propagation: &propagation.HTTPFormat{},
+		},
 	}
 
-	span := trace.FromContext(ctx).NewRemoteChild(req)
-	res, err := http.DefaultClient.Do(req)
-	span.Finish()
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, formatURL, strings.NewReader(in))
+	if err != nil {
+		return "", fmt.Errorf("NewRequestWithContext(): %v", err)
+	}
+
+	res, err := client.Do(req)
 	if err != nil {
 		return "", err
 	}

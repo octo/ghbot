@@ -67,8 +67,8 @@ import (
 	"log"
 	"sync"
 
-	"cloud.google.com/go/trace"
 	"github.com/google/go-github/github"
+	"go.opencensus.io/trace"
 )
 
 // Handle handles a webhook event.
@@ -111,6 +111,12 @@ func ${type}Handler(name string, hndl func(context.Context, *github.${type}Event
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handle${type}(ctx context.Context, event *github.${type}Event) error {
+	ctx, span := trace.StartSpan(ctx, "Event ${type}")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "${type}"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -120,10 +126,13 @@ func handle${type}(ctx context.Context, event *github.${type}Event) error {
 		go func(name string, hndl func(context.Context, *github.${type}Event) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/${type}/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q ${type} handler: %v", name, err)
 			}
 		}(name, hndl)

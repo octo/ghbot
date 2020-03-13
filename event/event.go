@@ -8,8 +8,8 @@ import (
 	"log"
 	"sync"
 
-	"cloud.google.com/go/trace"
 	"github.com/google/go-github/github"
+	"go.opencensus.io/trace"
 )
 
 // Handle handles a webhook event.
@@ -122,6 +122,12 @@ func CheckRunHandler(name string, hndl func(context.Context, *github.CheckRunEve
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleCheckRun(ctx context.Context, event *github.CheckRunEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event CheckRun")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "CheckRun"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -131,10 +137,13 @@ func handleCheckRun(ctx context.Context, event *github.CheckRunEvent) error {
 		go func(name string, hndl func(context.Context, *github.CheckRunEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/CheckRun/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q CheckRun handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -170,6 +179,12 @@ func CheckSuiteHandler(name string, hndl func(context.Context, *github.CheckSuit
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleCheckSuite(ctx context.Context, event *github.CheckSuiteEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event CheckSuite")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "CheckSuite"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -179,10 +194,13 @@ func handleCheckSuite(ctx context.Context, event *github.CheckSuiteEvent) error 
 		go func(name string, hndl func(context.Context, *github.CheckSuiteEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/CheckSuite/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q CheckSuite handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -218,6 +236,12 @@ func CommitCommentHandler(name string, hndl func(context.Context, *github.Commit
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleCommitComment(ctx context.Context, event *github.CommitCommentEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event CommitComment")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "CommitComment"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -227,10 +251,13 @@ func handleCommitComment(ctx context.Context, event *github.CommitCommentEvent) 
 		go func(name string, hndl func(context.Context, *github.CommitCommentEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/CommitComment/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q CommitComment handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -266,6 +293,12 @@ func CreateHandler(name string, hndl func(context.Context, *github.CreateEvent) 
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleCreate(ctx context.Context, event *github.CreateEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Create")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Create"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -275,10 +308,13 @@ func handleCreate(ctx context.Context, event *github.CreateEvent) error {
 		go func(name string, hndl func(context.Context, *github.CreateEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Create/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Create handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -314,6 +350,12 @@ func DeleteHandler(name string, hndl func(context.Context, *github.DeleteEvent) 
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleDelete(ctx context.Context, event *github.DeleteEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Delete")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Delete"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -323,10 +365,13 @@ func handleDelete(ctx context.Context, event *github.DeleteEvent) error {
 		go func(name string, hndl func(context.Context, *github.DeleteEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Delete/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Delete handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -362,6 +407,12 @@ func DeployKeyHandler(name string, hndl func(context.Context, *github.DeployKeyE
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleDeployKey(ctx context.Context, event *github.DeployKeyEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event DeployKey")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "DeployKey"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -371,10 +422,13 @@ func handleDeployKey(ctx context.Context, event *github.DeployKeyEvent) error {
 		go func(name string, hndl func(context.Context, *github.DeployKeyEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/DeployKey/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q DeployKey handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -410,6 +464,12 @@ func DeploymentHandler(name string, hndl func(context.Context, *github.Deploymen
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleDeployment(ctx context.Context, event *github.DeploymentEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Deployment")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Deployment"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -419,10 +479,13 @@ func handleDeployment(ctx context.Context, event *github.DeploymentEvent) error 
 		go func(name string, hndl func(context.Context, *github.DeploymentEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Deployment/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Deployment handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -458,6 +521,12 @@ func DeploymentStatusHandler(name string, hndl func(context.Context, *github.Dep
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleDeploymentStatus(ctx context.Context, event *github.DeploymentStatusEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event DeploymentStatus")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "DeploymentStatus"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -467,10 +536,13 @@ func handleDeploymentStatus(ctx context.Context, event *github.DeploymentStatusE
 		go func(name string, hndl func(context.Context, *github.DeploymentStatusEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/DeploymentStatus/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q DeploymentStatus handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -506,6 +578,12 @@ func ForkHandler(name string, hndl func(context.Context, *github.ForkEvent) erro
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleFork(ctx context.Context, event *github.ForkEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Fork")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Fork"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -515,10 +593,13 @@ func handleFork(ctx context.Context, event *github.ForkEvent) error {
 		go func(name string, hndl func(context.Context, *github.ForkEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Fork/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Fork handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -554,6 +635,12 @@ func GitHubAppAuthorizationHandler(name string, hndl func(context.Context, *gith
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleGitHubAppAuthorization(ctx context.Context, event *github.GitHubAppAuthorizationEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event GitHubAppAuthorization")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "GitHubAppAuthorization"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -563,10 +650,13 @@ func handleGitHubAppAuthorization(ctx context.Context, event *github.GitHubAppAu
 		go func(name string, hndl func(context.Context, *github.GitHubAppAuthorizationEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/GitHubAppAuthorization/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q GitHubAppAuthorization handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -602,6 +692,12 @@ func GollumHandler(name string, hndl func(context.Context, *github.GollumEvent) 
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleGollum(ctx context.Context, event *github.GollumEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Gollum")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Gollum"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -611,10 +707,13 @@ func handleGollum(ctx context.Context, event *github.GollumEvent) error {
 		go func(name string, hndl func(context.Context, *github.GollumEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Gollum/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Gollum handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -650,6 +749,12 @@ func InstallationHandler(name string, hndl func(context.Context, *github.Install
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleInstallation(ctx context.Context, event *github.InstallationEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Installation")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Installation"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -659,10 +764,13 @@ func handleInstallation(ctx context.Context, event *github.InstallationEvent) er
 		go func(name string, hndl func(context.Context, *github.InstallationEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Installation/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Installation handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -698,6 +806,12 @@ func InstallationRepositoriesHandler(name string, hndl func(context.Context, *gi
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleInstallationRepositories(ctx context.Context, event *github.InstallationRepositoriesEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event InstallationRepositories")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "InstallationRepositories"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -707,10 +821,13 @@ func handleInstallationRepositories(ctx context.Context, event *github.Installat
 		go func(name string, hndl func(context.Context, *github.InstallationRepositoriesEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/InstallationRepositories/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q InstallationRepositories handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -746,6 +863,12 @@ func IssueCommentHandler(name string, hndl func(context.Context, *github.IssueCo
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleIssueComment(ctx context.Context, event *github.IssueCommentEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event IssueComment")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "IssueComment"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -755,10 +878,13 @@ func handleIssueComment(ctx context.Context, event *github.IssueCommentEvent) er
 		go func(name string, hndl func(context.Context, *github.IssueCommentEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/IssueComment/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q IssueComment handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -794,6 +920,12 @@ func IssueHandler(name string, hndl func(context.Context, *github.IssueEvent) er
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleIssue(ctx context.Context, event *github.IssueEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Issue")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Issue"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -803,10 +935,13 @@ func handleIssue(ctx context.Context, event *github.IssueEvent) error {
 		go func(name string, hndl func(context.Context, *github.IssueEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Issue/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Issue handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -842,6 +977,12 @@ func IssuesHandler(name string, hndl func(context.Context, *github.IssuesEvent) 
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleIssues(ctx context.Context, event *github.IssuesEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Issues")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Issues"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -851,10 +992,13 @@ func handleIssues(ctx context.Context, event *github.IssuesEvent) error {
 		go func(name string, hndl func(context.Context, *github.IssuesEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Issues/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Issues handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -890,6 +1034,12 @@ func LabelHandler(name string, hndl func(context.Context, *github.LabelEvent) er
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleLabel(ctx context.Context, event *github.LabelEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Label")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Label"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -899,10 +1049,13 @@ func handleLabel(ctx context.Context, event *github.LabelEvent) error {
 		go func(name string, hndl func(context.Context, *github.LabelEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Label/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Label handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -938,6 +1091,12 @@ func MarketplacePurchaseHandler(name string, hndl func(context.Context, *github.
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleMarketplacePurchase(ctx context.Context, event *github.MarketplacePurchaseEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event MarketplacePurchase")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "MarketplacePurchase"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -947,10 +1106,13 @@ func handleMarketplacePurchase(ctx context.Context, event *github.MarketplacePur
 		go func(name string, hndl func(context.Context, *github.MarketplacePurchaseEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/MarketplacePurchase/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q MarketplacePurchase handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -986,6 +1148,12 @@ func MemberHandler(name string, hndl func(context.Context, *github.MemberEvent) 
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleMember(ctx context.Context, event *github.MemberEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Member")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Member"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -995,10 +1163,13 @@ func handleMember(ctx context.Context, event *github.MemberEvent) error {
 		go func(name string, hndl func(context.Context, *github.MemberEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Member/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Member handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1034,6 +1205,12 @@ func MembershipHandler(name string, hndl func(context.Context, *github.Membershi
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleMembership(ctx context.Context, event *github.MembershipEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Membership")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Membership"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -1043,10 +1220,13 @@ func handleMembership(ctx context.Context, event *github.MembershipEvent) error 
 		go func(name string, hndl func(context.Context, *github.MembershipEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Membership/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Membership handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1082,6 +1262,12 @@ func MetaHandler(name string, hndl func(context.Context, *github.MetaEvent) erro
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleMeta(ctx context.Context, event *github.MetaEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Meta")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Meta"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -1091,10 +1277,13 @@ func handleMeta(ctx context.Context, event *github.MetaEvent) error {
 		go func(name string, hndl func(context.Context, *github.MetaEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Meta/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Meta handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1130,6 +1319,12 @@ func MilestoneHandler(name string, hndl func(context.Context, *github.MilestoneE
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleMilestone(ctx context.Context, event *github.MilestoneEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Milestone")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Milestone"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -1139,10 +1334,13 @@ func handleMilestone(ctx context.Context, event *github.MilestoneEvent) error {
 		go func(name string, hndl func(context.Context, *github.MilestoneEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Milestone/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Milestone handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1178,6 +1376,12 @@ func OrganizationHandler(name string, hndl func(context.Context, *github.Organiz
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleOrganization(ctx context.Context, event *github.OrganizationEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Organization")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Organization"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -1187,10 +1391,13 @@ func handleOrganization(ctx context.Context, event *github.OrganizationEvent) er
 		go func(name string, hndl func(context.Context, *github.OrganizationEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Organization/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Organization handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1226,6 +1433,12 @@ func OrgBlockHandler(name string, hndl func(context.Context, *github.OrgBlockEve
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleOrgBlock(ctx context.Context, event *github.OrgBlockEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event OrgBlock")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "OrgBlock"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -1235,10 +1448,13 @@ func handleOrgBlock(ctx context.Context, event *github.OrgBlockEvent) error {
 		go func(name string, hndl func(context.Context, *github.OrgBlockEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/OrgBlock/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q OrgBlock handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1274,6 +1490,12 @@ func PageBuildHandler(name string, hndl func(context.Context, *github.PageBuildE
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handlePageBuild(ctx context.Context, event *github.PageBuildEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event PageBuild")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "PageBuild"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -1283,10 +1505,13 @@ func handlePageBuild(ctx context.Context, event *github.PageBuildEvent) error {
 		go func(name string, hndl func(context.Context, *github.PageBuildEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/PageBuild/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q PageBuild handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1322,6 +1547,12 @@ func ProjectCardHandler(name string, hndl func(context.Context, *github.ProjectC
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleProjectCard(ctx context.Context, event *github.ProjectCardEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event ProjectCard")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "ProjectCard"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -1331,10 +1562,13 @@ func handleProjectCard(ctx context.Context, event *github.ProjectCardEvent) erro
 		go func(name string, hndl func(context.Context, *github.ProjectCardEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/ProjectCard/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q ProjectCard handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1370,6 +1604,12 @@ func ProjectColumnHandler(name string, hndl func(context.Context, *github.Projec
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleProjectColumn(ctx context.Context, event *github.ProjectColumnEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event ProjectColumn")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "ProjectColumn"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -1379,10 +1619,13 @@ func handleProjectColumn(ctx context.Context, event *github.ProjectColumnEvent) 
 		go func(name string, hndl func(context.Context, *github.ProjectColumnEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/ProjectColumn/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q ProjectColumn handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1418,6 +1661,12 @@ func ProjectHandler(name string, hndl func(context.Context, *github.ProjectEvent
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleProject(ctx context.Context, event *github.ProjectEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Project")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Project"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -1427,10 +1676,13 @@ func handleProject(ctx context.Context, event *github.ProjectEvent) error {
 		go func(name string, hndl func(context.Context, *github.ProjectEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Project/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Project handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1466,6 +1718,12 @@ func PublicHandler(name string, hndl func(context.Context, *github.PublicEvent) 
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handlePublic(ctx context.Context, event *github.PublicEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Public")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Public"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -1475,10 +1733,13 @@ func handlePublic(ctx context.Context, event *github.PublicEvent) error {
 		go func(name string, hndl func(context.Context, *github.PublicEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Public/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Public handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1514,6 +1775,12 @@ func PullRequestHandler(name string, hndl func(context.Context, *github.PullRequ
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handlePullRequest(ctx context.Context, event *github.PullRequestEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event PullRequest")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "PullRequest"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -1523,10 +1790,13 @@ func handlePullRequest(ctx context.Context, event *github.PullRequestEvent) erro
 		go func(name string, hndl func(context.Context, *github.PullRequestEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/PullRequest/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q PullRequest handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1562,6 +1832,12 @@ func PullRequestReviewHandler(name string, hndl func(context.Context, *github.Pu
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handlePullRequestReview(ctx context.Context, event *github.PullRequestReviewEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event PullRequestReview")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "PullRequestReview"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -1571,10 +1847,13 @@ func handlePullRequestReview(ctx context.Context, event *github.PullRequestRevie
 		go func(name string, hndl func(context.Context, *github.PullRequestReviewEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/PullRequestReview/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q PullRequestReview handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1610,6 +1889,12 @@ func PullRequestReviewCommentHandler(name string, hndl func(context.Context, *gi
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handlePullRequestReviewComment(ctx context.Context, event *github.PullRequestReviewCommentEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event PullRequestReviewComment")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "PullRequestReviewComment"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -1619,10 +1904,13 @@ func handlePullRequestReviewComment(ctx context.Context, event *github.PullReque
 		go func(name string, hndl func(context.Context, *github.PullRequestReviewCommentEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/PullRequestReviewComment/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q PullRequestReviewComment handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1658,6 +1946,12 @@ func PushHandler(name string, hndl func(context.Context, *github.PushEvent) erro
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handlePush(ctx context.Context, event *github.PushEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Push")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Push"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -1667,10 +1961,13 @@ func handlePush(ctx context.Context, event *github.PushEvent) error {
 		go func(name string, hndl func(context.Context, *github.PushEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Push/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Push handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1706,6 +2003,12 @@ func ReleaseHandler(name string, hndl func(context.Context, *github.ReleaseEvent
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleRelease(ctx context.Context, event *github.ReleaseEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Release")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Release"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -1715,10 +2018,13 @@ func handleRelease(ctx context.Context, event *github.ReleaseEvent) error {
 		go func(name string, hndl func(context.Context, *github.ReleaseEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Release/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Release handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1754,6 +2060,12 @@ func RepositoryDispatchHandler(name string, hndl func(context.Context, *github.R
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleRepositoryDispatch(ctx context.Context, event *github.RepositoryDispatchEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event RepositoryDispatch")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "RepositoryDispatch"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -1763,10 +2075,13 @@ func handleRepositoryDispatch(ctx context.Context, event *github.RepositoryDispa
 		go func(name string, hndl func(context.Context, *github.RepositoryDispatchEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/RepositoryDispatch/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q RepositoryDispatch handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1802,6 +2117,12 @@ func RepositoryHandler(name string, hndl func(context.Context, *github.Repositor
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleRepository(ctx context.Context, event *github.RepositoryEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Repository")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Repository"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -1811,10 +2132,13 @@ func handleRepository(ctx context.Context, event *github.RepositoryEvent) error 
 		go func(name string, hndl func(context.Context, *github.RepositoryEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Repository/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Repository handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1850,6 +2174,12 @@ func RepositoryVulnerabilityAlertHandler(name string, hndl func(context.Context,
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleRepositoryVulnerabilityAlert(ctx context.Context, event *github.RepositoryVulnerabilityAlertEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event RepositoryVulnerabilityAlert")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "RepositoryVulnerabilityAlert"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -1859,10 +2189,13 @@ func handleRepositoryVulnerabilityAlert(ctx context.Context, event *github.Repos
 		go func(name string, hndl func(context.Context, *github.RepositoryVulnerabilityAlertEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/RepositoryVulnerabilityAlert/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q RepositoryVulnerabilityAlert handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1898,6 +2231,12 @@ func StarHandler(name string, hndl func(context.Context, *github.StarEvent) erro
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleStar(ctx context.Context, event *github.StarEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Star")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Star"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -1907,10 +2246,13 @@ func handleStar(ctx context.Context, event *github.StarEvent) error {
 		go func(name string, hndl func(context.Context, *github.StarEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Star/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Star handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1946,6 +2288,12 @@ func StatusHandler(name string, hndl func(context.Context, *github.StatusEvent) 
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleStatus(ctx context.Context, event *github.StatusEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Status")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Status"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -1955,10 +2303,13 @@ func handleStatus(ctx context.Context, event *github.StatusEvent) error {
 		go func(name string, hndl func(context.Context, *github.StatusEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Status/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Status handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -1994,6 +2345,12 @@ func TeamAddHandler(name string, hndl func(context.Context, *github.TeamAddEvent
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleTeamAdd(ctx context.Context, event *github.TeamAddEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event TeamAdd")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "TeamAdd"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -2003,10 +2360,13 @@ func handleTeamAdd(ctx context.Context, event *github.TeamAddEvent) error {
 		go func(name string, hndl func(context.Context, *github.TeamAddEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/TeamAdd/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q TeamAdd handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -2042,6 +2402,12 @@ func TeamHandler(name string, hndl func(context.Context, *github.TeamEvent) erro
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleTeam(ctx context.Context, event *github.TeamEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Team")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Team"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -2051,10 +2417,13 @@ func handleTeam(ctx context.Context, event *github.TeamEvent) error {
 		go func(name string, hndl func(context.Context, *github.TeamEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Team/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Team handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -2090,6 +2459,12 @@ func UserHandler(name string, hndl func(context.Context, *github.UserEvent) erro
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleUser(ctx context.Context, event *github.UserEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event User")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "User"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -2099,10 +2474,13 @@ func handleUser(ctx context.Context, event *github.UserEvent) error {
 		go func(name string, hndl func(context.Context, *github.UserEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/User/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q User handler: %v", name, err)
 			}
 		}(name, hndl)
@@ -2138,6 +2516,12 @@ func WatchHandler(name string, hndl func(context.Context, *github.WatchEvent) er
 // returns an error, that error is returned immediately and no further handlers
 // are called.
 func handleWatch(ctx context.Context, event *github.WatchEvent) error {
+	ctx, span := trace.StartSpan(ctx, "Event Watch")
+	span.AddAttributes(
+		trace.StringAttribute("/github/event", "Watch"),
+	)
+	defer span.End()
+
 	wg := sync.WaitGroup{}
 	ch := make(chan error)
 
@@ -2147,10 +2531,13 @@ func handleWatch(ctx context.Context, event *github.WatchEvent) error {
 		go func(name string, hndl func(context.Context, *github.WatchEvent) error) {
 			defer wg.Done()
 
-			span := trace.FromContext(ctx).NewChild("/Watch/" + name)
-			defer span.Finish()
+			ctx, span := trace.StartSpan(ctx, "Action "+name)
+			span.AddAttributes(
+				trace.StringAttribute("/github/bot/action", name),
+			)
+			defer span.End()
 
-			if err := hndl(trace.NewContext(ctx, span), event); err != nil {
+			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Watch handler: %v", name, err)
 			}
 		}(name, hndl)

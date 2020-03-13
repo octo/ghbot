@@ -9,9 +9,11 @@ import (
 	"regexp"
 	"strconv"
 
+	"contrib.go.opencensus.io/exporter/stackdriver/propagation"
 	"github.com/google/go-github/github"
 	"github.com/octo/ghbot/config"
 	"github.com/octo/retry"
+	"go.opencensus.io/plugin/ochttp"
 	"golang.org/x/oauth2"
 )
 
@@ -41,7 +43,9 @@ func New(ctx context.Context, owner, repo string) (*Client, error) {
 	t := &retry.Transport{
 		RoundTripper: &oauth2.Transport{
 			Source: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken}),
-			Base:   http.DefaultTransport,
+			Base: &ochttp.Transport{
+				Propagation: &propagation.HTTPFormat{},
+			},
 		},
 	}
 

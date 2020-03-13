@@ -7,12 +7,13 @@ import (
 	"net/http"
 	"os"
 
-	"cloud.google.com/go/trace"
+	"contrib.go.opencensus.io/exporter/stackdriver"
+	"contrib.go.opencensus.io/exporter/stackdriver/propagation"
 	"github.com/google/go-github/github"
 	"github.com/octo/ghbot/config"
 	"github.com/octo/ghbot/event"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/option"
+	"go.opencensus.io/plugin/ochttp"
+	"go.opencensus.io/trace"
 
 	_ "github.com/octo/ghbot/actions/automerge"
 	_ "github.com/octo/ghbot/actions/changelog"
@@ -22,47 +23,41 @@ import (
 )
 
 func main() {
+	// set up tracing
+	exporter, err := stackdriver.NewExporter(stackdriver.Options{
+		ProjectID: os.Getenv("GOOGLE_CLOUD_PROJECT"),
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	trace.RegisterExporter(exporter)
+	trace.ApplyConfig(trace.Config{
+		DefaultSampler: trace.AlwaysSample(),
+	})
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 		log.Printf("Defaulting to port %s", port)
 	}
 
-	http.HandleFunc("/", handler)
+	http.Handle("/", &ochttp.Handler{
+		Propagation:      &propagation.HTTPFormat{},
+		Handler:          http.HandlerFunc(handler),
+		IsPublicEndpoint: true,
+	})
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatalln("http.ListenAndServe:", err)
 	}
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	creds, err := google.FindDefaultCredentials(ctx, trace.ScopeTraceAppend)
-	if err != nil {
-		log.Println("google.FindDefaultCredentials():", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	traceClient, err := trace.NewClient(ctx, creds.ProjectID,
-		option.WithTokenSource(creds.TokenSource))
-	if err != nil {
-		log.Println("trace.NewClient():", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	span := traceClient.SpanFromRequest(r)
-	defer span.Finish()
-
-	ctx = trace.NewContext(ctx, span)
-
 	if r.Method != "POST" {
 		http.Redirect(w, r, "https://github.com/collectd/collectd/", http.StatusFound)
 		return
 	}
 
-	if err := contextHandler(ctx, w, r); err != nil {
+	if err := contextHandler(r.Context(), w, r); err != nil {
 		log.Println("contextHandler:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
