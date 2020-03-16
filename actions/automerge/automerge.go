@@ -3,10 +3,10 @@ package automerge
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/google/go-github/github"
+	"github.com/octo/gaelog"
 	"github.com/octo/ghbot/client"
 	"github.com/octo/ghbot/event"
 )
@@ -57,7 +57,7 @@ func processStatusEvent(ctx context.Context, event *github.StatusEvent) error {
 
 	pr, err := c.PullRequestBySHA(ctx, event.GetSHA())
 	if err == os.ErrNotExist {
-		log.Printf("automerge: no pull request found for %s", event.GetSHA())
+		gaelog.Debugf(ctx, "automerge: no pull request found for %s", event.GetSHA())
 		return nil
 	} else if err != nil {
 		return err
@@ -74,10 +74,10 @@ func processStatusEvent(ctx context.Context, event *github.StatusEvent) error {
 // * All required checks have succeeded.
 // * There are no merge conflicts.
 func process(ctx context.Context, pr *client.PR) error {
-	log.Printf("checking if %v can be automerged", pr)
+	gaelog.Debugf(ctx, "checking if %v can be automerged", pr)
 
 	if pr.GetMerged() || pr.GetState() != "open" {
-		log.Printf("automerge: no, not open")
+		gaelog.Debugf(ctx, "automerge: no, not open")
 		return nil
 	}
 
@@ -87,7 +87,7 @@ func process(ctx context.Context, pr *client.PR) error {
 	}
 
 	if !issue.HasLabel(automergeLabel) {
-		log.Printf("automerge: no, does not have the %q label", automergeLabel)
+		gaelog.Debugf(ctx, "automerge: no, does not have the %q label", automergeLabel)
 		return nil
 	}
 
@@ -95,7 +95,7 @@ func process(ctx context.Context, pr *client.PR) error {
 		if err != nil {
 			return err
 		}
-		log.Printf("automerge: no, there are unfinished reviews")
+		gaelog.Debugf(ctx, "automerge: no, there are unfinished reviews")
 		return nil
 	}
 
@@ -111,13 +111,13 @@ func process(ctx context.Context, pr *client.PR) error {
 
 	for _, req := range requiredChecks {
 		if !success[req] {
-			log.Printf("automerge: no, check %q missing or not successful", req)
+			gaelog.Debugf(ctx, "automerge: no, check %q missing or not successful", req)
 			return nil
 		}
 	}
 
 	if s := status.GetState(); s != "success" {
-		log.Printf("automerge: no, overall status is %q", s)
+		gaelog.Debugf(ctx, "automerge: no, overall status is %q", s)
 		return nil
 	}
 
@@ -126,11 +126,11 @@ func process(ctx context.Context, pr *client.PR) error {
 		return err
 	}
 	if !ok {
-		log.Printf("automerge: no, has merge conflicts")
+		gaelog.Debugf(ctx, "automerge: no, has merge conflicts")
 		return nil
 	}
 
-	log.Printf("merging %v", pr)
+	gaelog.Infof(ctx, "merging %v", pr)
 	title := fmt.Sprintf("Auto-Merge pull request %v from %s/%s", pr, pr.Head.User.GetLogin(), pr.Head.GetRef())
 	msg := fmt.Sprintf("Automatically merged due to %q label", automergeLabel)
 	return pr.Merge(ctx, title, msg)
@@ -168,9 +168,9 @@ func allReviewsFinished(ctx context.Context, pr *client.PR) (bool, error) {
 	result := true
 	for name, state := range reviews {
 		if state == "APPROVED" {
-			log.Printf("Pull request %v approved by %s", pr, name)
+			gaelog.Debugf(ctx, "Pull request %v approved by %s", pr, name)
 		} else {
-			log.Printf("Review of %v by %s is in state %q", pr, name, state)
+			gaelog.Debugf(ctx, "Review of %v by %s is in state %q", pr, name, state)
 			result = false
 		}
 	}

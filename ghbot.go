@@ -10,6 +10,7 @@ import (
 	"contrib.go.opencensus.io/exporter/stackdriver"
 	"contrib.go.opencensus.io/exporter/stackdriver/propagation"
 	"github.com/google/go-github/github"
+	"github.com/octo/gaelog"
 	"github.com/octo/ghbot/config"
 	"github.com/octo/ghbot/event"
 	"go.opencensus.io/plugin/ochttp"
@@ -58,7 +59,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := contextHandler(r.Context(), w, r); err != nil {
-		log.Println("contextHandler:", err)
+		gaelog.Errorf(r.Context(), "contextHandler: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -67,14 +68,14 @@ func handler(w http.ResponseWriter, r *http.Request) {
 func contextHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	secretKey, err := config.SecretKey(ctx)
 	if err != nil {
-		log.Println("SecretKey:", err)
+		gaelog.Errorf(ctx, "SecretKey: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return nil
 	}
 
 	payload, err := github.ValidatePayload(r, secretKey)
 	if err != nil {
-		log.Println("ValidatePayload:", err)
+		gaelog.Errorf(ctx, "ValidatePayload: %v", err)
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return nil
 	}
@@ -86,9 +87,8 @@ func contextHandler(ctx context.Context, w http.ResponseWriter, r *http.Request)
 
 	e, err := github.ParseWebHook(whType, payload)
 	if err != nil {
-		log.Println("ParseWebHook:", err)
-		httpStatusUnprocessableEntity := 422
-		http.Error(w, err.Error(), httpStatusUnprocessableEntity)
+		gaelog.Errorf(ctx, "ParseWebHook: %v", err)
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return nil
 	}
 
