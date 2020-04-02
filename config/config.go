@@ -20,9 +20,7 @@ func loadCreds(ctx context.Context) error {
 		return nil
 	}
 
-	// remove once https://code-review.googlesource.com/c/gocloud/+/53290 is merged.
-	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
-	client, err := datastore.NewClient(ctx, projectID)
+	client, err := datastore.NewClient(ctx, datastore.DetectProjectID)
 	if err != nil {
 		return err
 	}
