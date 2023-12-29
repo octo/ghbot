@@ -105,7 +105,7 @@ func processPullRequestEvent(ctx context.Context, e *github.PullRequestEvent) er
 	}()
 
 	if total == 0 {
-		return nil
+		return c.CreateStatus(ctx, checkName, client.StatusSuccess, "PR contains no affected files", detailsURL, ref)
 	}
 
 	if err := c.CreateStatus(ctx, checkName, client.StatusPending, "Checking formatting ...", detailsURL, ref); err != nil {
