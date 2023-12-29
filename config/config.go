@@ -3,7 +3,6 @@ package config
 
 import (
 	"context"
-	"os"
 
 	"cloud.google.com/go/datastore"
 )
