@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/google/go-github/github"
-	"github.com/octo/gaelog"
+	"github.com/mtraver/gaelog"
 	"github.com/octo/ghbot/client"
 	"github.com/octo/ghbot/event"
 )

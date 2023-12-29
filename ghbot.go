@@ -10,7 +10,7 @@ import (
 	"contrib.go.opencensus.io/exporter/stackdriver"
 	"contrib.go.opencensus.io/exporter/stackdriver/propagation"
 	"github.com/google/go-github/github"
-	"github.com/octo/gaelog"
+	"github.com/mtraver/gaelog"
 	"github.com/octo/ghbot/config"
 	"github.com/octo/ghbot/event"
 	"go.opencensus.io/plugin/ochttp"
