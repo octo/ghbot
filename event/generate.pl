@@ -16,11 +16,9 @@ my @eventTypes = qw(
     CommitComment
     Create
     Delete
-    DeployKey
     Deployment
     DeploymentStatus
     Fork
-    GitHubAppAuthorization
     Gollum
     Installation
     InstallationRepositories
@@ -31,7 +29,6 @@ my @eventTypes = qw(
     MarketplacePurchase
     Member
     Membership
-    Meta
     Milestone
     Organization
     OrgBlock
@@ -45,14 +42,10 @@ my @eventTypes = qw(
     PullRequestReviewComment
     Push
     Release
-    RepositoryDispatch
     Repository
-    RepositoryVulnerabilityAlert
-    Star
     Status
     TeamAdd
     Team
-    User
     Watch
 );
 

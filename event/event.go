@@ -25,16 +25,12 @@ func Handle(ctx context.Context, event interface{}) error {
 		return handleCreate(ctx, event)
 	case *github.DeleteEvent:
 		return handleDelete(ctx, event)
-	case *github.DeployKeyEvent:
-		return handleDeployKey(ctx, event)
 	case *github.DeploymentEvent:
 		return handleDeployment(ctx, event)
 	case *github.DeploymentStatusEvent:
 		return handleDeploymentStatus(ctx, event)
 	case *github.ForkEvent:
 		return handleFork(ctx, event)
-	case *github.GitHubAppAuthorizationEvent:
-		return handleGitHubAppAuthorization(ctx, event)
 	case *github.GollumEvent:
 		return handleGollum(ctx, event)
 	case *github.InstallationEvent:
@@ -55,8 +51,6 @@ func Handle(ctx context.Context, event interface{}) error {
 		return handleMember(ctx, event)
 	case *github.MembershipEvent:
 		return handleMembership(ctx, event)
-	case *github.MetaEvent:
-		return handleMeta(ctx, event)
 	case *github.MilestoneEvent:
 		return handleMilestone(ctx, event)
 	case *github.OrganizationEvent:
@@ -83,22 +77,14 @@ func Handle(ctx context.Context, event interface{}) error {
 		return handlePush(ctx, event)
 	case *github.ReleaseEvent:
 		return handleRelease(ctx, event)
-	case *github.RepositoryDispatchEvent:
-		return handleRepositoryDispatch(ctx, event)
 	case *github.RepositoryEvent:
 		return handleRepository(ctx, event)
-	case *github.RepositoryVulnerabilityAlertEvent:
-		return handleRepositoryVulnerabilityAlert(ctx, event)
-	case *github.StarEvent:
-		return handleStar(ctx, event)
 	case *github.StatusEvent:
 		return handleStatus(ctx, event)
 	case *github.TeamAddEvent:
 		return handleTeamAdd(ctx, event)
 	case *github.TeamEvent:
 		return handleTeam(ctx, event)
-	case *github.UserEvent:
-		return handleUser(ctx, event)
 	case *github.WatchEvent:
 		return handleWatch(ctx, event)
 	default:
@@ -394,63 +380,6 @@ func handleDelete(ctx context.Context, event *github.DeleteEvent) error {
 }
 
 //
-// DeployKey events
-//
-var deployKeyHandlers = map[string]func(context.Context, *github.DeployKeyEvent) error{}
-
-// DeployKeyHandler registers a handler for DeployKey events.
-func DeployKeyHandler(name string, hndl func(context.Context, *github.DeployKeyEvent) error) {
-	deployKeyHandlers[name] = hndl
-}
-
-// handleDeployKey calls all handlers for DeployKey events. If a handler
-// returns an error, that error is returned immediately and no further handlers
-// are called.
-func handleDeployKey(ctx context.Context, event *github.DeployKeyEvent) error {
-	ctx, span := trace.StartSpan(ctx, "Event DeployKey")
-	span.AddAttributes(
-		trace.StringAttribute("/github/event", "DeployKey"),
-	)
-	defer span.End()
-
-	wg := sync.WaitGroup{}
-	ch := make(chan error)
-
-	for name, hndl := range deployKeyHandlers {
-		wg.Add(1)
-
-		go func(name string, hndl func(context.Context, *github.DeployKeyEvent) error) {
-			defer wg.Done()
-
-			ctx, span := trace.StartSpan(ctx, "Action "+name)
-			span.AddAttributes(
-				trace.StringAttribute("/github/bot/action", name),
-			)
-			defer span.End()
-
-			if err := hndl(ctx, event); err != nil {
-				ch <- fmt.Errorf("%q DeployKey handler: %v", name, err)
-			}
-		}(name, hndl)
-	}
-
-	go func() {
-		wg.Wait()
-		close(ch)
-	}()
-
-	var lastErr error
-	for err := range ch {
-		if lastErr != nil {
-			log.Print(lastErr)
-		}
-		lastErr = err
-	}
-
-	return lastErr
-}
-
-//
 // Deployment events
 //
 var deploymentHandlers = map[string]func(context.Context, *github.DeploymentEvent) error{}
@@ -601,63 +530,6 @@ func handleFork(ctx context.Context, event *github.ForkEvent) error {
 
 			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Fork handler: %v", name, err)
-			}
-		}(name, hndl)
-	}
-
-	go func() {
-		wg.Wait()
-		close(ch)
-	}()
-
-	var lastErr error
-	for err := range ch {
-		if lastErr != nil {
-			log.Print(lastErr)
-		}
-		lastErr = err
-	}
-
-	return lastErr
-}
-
-//
-// GitHubAppAuthorization events
-//
-var gitHubAppAuthorizationHandlers = map[string]func(context.Context, *github.GitHubAppAuthorizationEvent) error{}
-
-// GitHubAppAuthorizationHandler registers a handler for GitHubAppAuthorization events.
-func GitHubAppAuthorizationHandler(name string, hndl func(context.Context, *github.GitHubAppAuthorizationEvent) error) {
-	gitHubAppAuthorizationHandlers[name] = hndl
-}
-
-// handleGitHubAppAuthorization calls all handlers for GitHubAppAuthorization events. If a handler
-// returns an error, that error is returned immediately and no further handlers
-// are called.
-func handleGitHubAppAuthorization(ctx context.Context, event *github.GitHubAppAuthorizationEvent) error {
-	ctx, span := trace.StartSpan(ctx, "Event GitHubAppAuthorization")
-	span.AddAttributes(
-		trace.StringAttribute("/github/event", "GitHubAppAuthorization"),
-	)
-	defer span.End()
-
-	wg := sync.WaitGroup{}
-	ch := make(chan error)
-
-	for name, hndl := range gitHubAppAuthorizationHandlers {
-		wg.Add(1)
-
-		go func(name string, hndl func(context.Context, *github.GitHubAppAuthorizationEvent) error) {
-			defer wg.Done()
-
-			ctx, span := trace.StartSpan(ctx, "Action "+name)
-			span.AddAttributes(
-				trace.StringAttribute("/github/bot/action", name),
-			)
-			defer span.End()
-
-			if err := hndl(ctx, event); err != nil {
-				ch <- fmt.Errorf("%q GitHubAppAuthorization handler: %v", name, err)
 			}
 		}(name, hndl)
 	}
@@ -1228,63 +1100,6 @@ func handleMembership(ctx context.Context, event *github.MembershipEvent) error 
 
 			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Membership handler: %v", name, err)
-			}
-		}(name, hndl)
-	}
-
-	go func() {
-		wg.Wait()
-		close(ch)
-	}()
-
-	var lastErr error
-	for err := range ch {
-		if lastErr != nil {
-			log.Print(lastErr)
-		}
-		lastErr = err
-	}
-
-	return lastErr
-}
-
-//
-// Meta events
-//
-var metaHandlers = map[string]func(context.Context, *github.MetaEvent) error{}
-
-// MetaHandler registers a handler for Meta events.
-func MetaHandler(name string, hndl func(context.Context, *github.MetaEvent) error) {
-	metaHandlers[name] = hndl
-}
-
-// handleMeta calls all handlers for Meta events. If a handler
-// returns an error, that error is returned immediately and no further handlers
-// are called.
-func handleMeta(ctx context.Context, event *github.MetaEvent) error {
-	ctx, span := trace.StartSpan(ctx, "Event Meta")
-	span.AddAttributes(
-		trace.StringAttribute("/github/event", "Meta"),
-	)
-	defer span.End()
-
-	wg := sync.WaitGroup{}
-	ch := make(chan error)
-
-	for name, hndl := range metaHandlers {
-		wg.Add(1)
-
-		go func(name string, hndl func(context.Context, *github.MetaEvent) error) {
-			defer wg.Done()
-
-			ctx, span := trace.StartSpan(ctx, "Action "+name)
-			span.AddAttributes(
-				trace.StringAttribute("/github/bot/action", name),
-			)
-			defer span.End()
-
-			if err := hndl(ctx, event); err != nil {
-				ch <- fmt.Errorf("%q Meta handler: %v", name, err)
 			}
 		}(name, hndl)
 	}
@@ -2047,63 +1862,6 @@ func handleRelease(ctx context.Context, event *github.ReleaseEvent) error {
 }
 
 //
-// RepositoryDispatch events
-//
-var repositoryDispatchHandlers = map[string]func(context.Context, *github.RepositoryDispatchEvent) error{}
-
-// RepositoryDispatchHandler registers a handler for RepositoryDispatch events.
-func RepositoryDispatchHandler(name string, hndl func(context.Context, *github.RepositoryDispatchEvent) error) {
-	repositoryDispatchHandlers[name] = hndl
-}
-
-// handleRepositoryDispatch calls all handlers for RepositoryDispatch events. If a handler
-// returns an error, that error is returned immediately and no further handlers
-// are called.
-func handleRepositoryDispatch(ctx context.Context, event *github.RepositoryDispatchEvent) error {
-	ctx, span := trace.StartSpan(ctx, "Event RepositoryDispatch")
-	span.AddAttributes(
-		trace.StringAttribute("/github/event", "RepositoryDispatch"),
-	)
-	defer span.End()
-
-	wg := sync.WaitGroup{}
-	ch := make(chan error)
-
-	for name, hndl := range repositoryDispatchHandlers {
-		wg.Add(1)
-
-		go func(name string, hndl func(context.Context, *github.RepositoryDispatchEvent) error) {
-			defer wg.Done()
-
-			ctx, span := trace.StartSpan(ctx, "Action "+name)
-			span.AddAttributes(
-				trace.StringAttribute("/github/bot/action", name),
-			)
-			defer span.End()
-
-			if err := hndl(ctx, event); err != nil {
-				ch <- fmt.Errorf("%q RepositoryDispatch handler: %v", name, err)
-			}
-		}(name, hndl)
-	}
-
-	go func() {
-		wg.Wait()
-		close(ch)
-	}()
-
-	var lastErr error
-	for err := range ch {
-		if lastErr != nil {
-			log.Print(lastErr)
-		}
-		lastErr = err
-	}
-
-	return lastErr
-}
-
-//
 // Repository events
 //
 var repositoryHandlers = map[string]func(context.Context, *github.RepositoryEvent) error{}
@@ -2140,120 +1898,6 @@ func handleRepository(ctx context.Context, event *github.RepositoryEvent) error 
 
 			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Repository handler: %v", name, err)
-			}
-		}(name, hndl)
-	}
-
-	go func() {
-		wg.Wait()
-		close(ch)
-	}()
-
-	var lastErr error
-	for err := range ch {
-		if lastErr != nil {
-			log.Print(lastErr)
-		}
-		lastErr = err
-	}
-
-	return lastErr
-}
-
-//
-// RepositoryVulnerabilityAlert events
-//
-var repositoryVulnerabilityAlertHandlers = map[string]func(context.Context, *github.RepositoryVulnerabilityAlertEvent) error{}
-
-// RepositoryVulnerabilityAlertHandler registers a handler for RepositoryVulnerabilityAlert events.
-func RepositoryVulnerabilityAlertHandler(name string, hndl func(context.Context, *github.RepositoryVulnerabilityAlertEvent) error) {
-	repositoryVulnerabilityAlertHandlers[name] = hndl
-}
-
-// handleRepositoryVulnerabilityAlert calls all handlers for RepositoryVulnerabilityAlert events. If a handler
-// returns an error, that error is returned immediately and no further handlers
-// are called.
-func handleRepositoryVulnerabilityAlert(ctx context.Context, event *github.RepositoryVulnerabilityAlertEvent) error {
-	ctx, span := trace.StartSpan(ctx, "Event RepositoryVulnerabilityAlert")
-	span.AddAttributes(
-		trace.StringAttribute("/github/event", "RepositoryVulnerabilityAlert"),
-	)
-	defer span.End()
-
-	wg := sync.WaitGroup{}
-	ch := make(chan error)
-
-	for name, hndl := range repositoryVulnerabilityAlertHandlers {
-		wg.Add(1)
-
-		go func(name string, hndl func(context.Context, *github.RepositoryVulnerabilityAlertEvent) error) {
-			defer wg.Done()
-
-			ctx, span := trace.StartSpan(ctx, "Action "+name)
-			span.AddAttributes(
-				trace.StringAttribute("/github/bot/action", name),
-			)
-			defer span.End()
-
-			if err := hndl(ctx, event); err != nil {
-				ch <- fmt.Errorf("%q RepositoryVulnerabilityAlert handler: %v", name, err)
-			}
-		}(name, hndl)
-	}
-
-	go func() {
-		wg.Wait()
-		close(ch)
-	}()
-
-	var lastErr error
-	for err := range ch {
-		if lastErr != nil {
-			log.Print(lastErr)
-		}
-		lastErr = err
-	}
-
-	return lastErr
-}
-
-//
-// Star events
-//
-var starHandlers = map[string]func(context.Context, *github.StarEvent) error{}
-
-// StarHandler registers a handler for Star events.
-func StarHandler(name string, hndl func(context.Context, *github.StarEvent) error) {
-	starHandlers[name] = hndl
-}
-
-// handleStar calls all handlers for Star events. If a handler
-// returns an error, that error is returned immediately and no further handlers
-// are called.
-func handleStar(ctx context.Context, event *github.StarEvent) error {
-	ctx, span := trace.StartSpan(ctx, "Event Star")
-	span.AddAttributes(
-		trace.StringAttribute("/github/event", "Star"),
-	)
-	defer span.End()
-
-	wg := sync.WaitGroup{}
-	ch := make(chan error)
-
-	for name, hndl := range starHandlers {
-		wg.Add(1)
-
-		go func(name string, hndl func(context.Context, *github.StarEvent) error) {
-			defer wg.Done()
-
-			ctx, span := trace.StartSpan(ctx, "Action "+name)
-			span.AddAttributes(
-				trace.StringAttribute("/github/bot/action", name),
-			)
-			defer span.End()
-
-			if err := hndl(ctx, event); err != nil {
-				ch <- fmt.Errorf("%q Star handler: %v", name, err)
 			}
 		}(name, hndl)
 	}
@@ -2425,63 +2069,6 @@ func handleTeam(ctx context.Context, event *github.TeamEvent) error {
 
 			if err := hndl(ctx, event); err != nil {
 				ch <- fmt.Errorf("%q Team handler: %v", name, err)
-			}
-		}(name, hndl)
-	}
-
-	go func() {
-		wg.Wait()
-		close(ch)
-	}()
-
-	var lastErr error
-	for err := range ch {
-		if lastErr != nil {
-			log.Print(lastErr)
-		}
-		lastErr = err
-	}
-
-	return lastErr
-}
-
-//
-// User events
-//
-var userHandlers = map[string]func(context.Context, *github.UserEvent) error{}
-
-// UserHandler registers a handler for User events.
-func UserHandler(name string, hndl func(context.Context, *github.UserEvent) error) {
-	userHandlers[name] = hndl
-}
-
-// handleUser calls all handlers for User events. If a handler
-// returns an error, that error is returned immediately and no further handlers
-// are called.
-func handleUser(ctx context.Context, event *github.UserEvent) error {
-	ctx, span := trace.StartSpan(ctx, "Event User")
-	span.AddAttributes(
-		trace.StringAttribute("/github/event", "User"),
-	)
-	defer span.End()
-
-	wg := sync.WaitGroup{}
-	ch := make(chan error)
-
-	for name, hndl := range userHandlers {
-		wg.Add(1)
-
-		go func(name string, hndl func(context.Context, *github.UserEvent) error) {
-			defer wg.Done()
-
-			ctx, span := trace.StartSpan(ctx, "Action "+name)
-			span.AddAttributes(
-				trace.StringAttribute("/github/bot/action", name),
-			)
-			defer span.End()
-
-			if err := hndl(ctx, event); err != nil {
-				ch <- fmt.Errorf("%q User handler: %v", name, err)
 			}
 		}(name, hndl)
 	}
