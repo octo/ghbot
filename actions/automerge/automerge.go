@@ -13,12 +13,16 @@ import (
 
 const automergeLabel = "Automerge"
 
-// requiredChecks is a list of all status "contexts" that must signal success
+// requiredStatuses is a list of all status "contexts" that must signal success
 // before a PR can automatically be merged.
 // TODO(octo): may be redundant with the "Require status checks to pass before merging" setting.
-var requiredChecks = []string{
+var requiredStatuses = []string{
 	"ChangeLog",
-	"continuous-integration/travis-ci/pr",
+	"clang-format",
+}
+
+var requiredChecks = []string{
+	"make_distcheck",
 }
 
 func init() {
@@ -33,7 +37,7 @@ func processPullRequestEvent(ctx context.Context, event *github.PullRequestEvent
 		return err
 	}
 
-	return process(ctx, c.WrapPR(event.PullRequest))
+	return process(ctx, c, c.WrapPR(event.PullRequest))
 }
 
 func processReviewEvent(ctx context.Context, e *github.PullRequestReviewEvent) error {
@@ -42,7 +46,7 @@ func processReviewEvent(ctx context.Context, e *github.PullRequestReviewEvent) e
 		return err
 	}
 
-	return process(ctx, c.WrapPR(e.GetPullRequest()))
+	return process(ctx, c, c.WrapPR(e.GetPullRequest()))
 }
 
 func processStatusEvent(ctx context.Context, event *github.StatusEvent) error {
@@ -63,7 +67,7 @@ func processStatusEvent(ctx context.Context, event *github.StatusEvent) error {
 		return err
 	}
 
-	return process(ctx, pr)
+	return process(ctx, c, pr)
 }
 
 // process merges a pull request, if:
@@ -73,7 +77,7 @@ func processStatusEvent(ctx context.Context, event *github.StatusEvent) error {
 // * The overall state is "success".
 // * All required checks have succeeded.
 // * There are no merge conflicts.
-func process(ctx context.Context, pr *client.PR) error {
+func process(ctx context.Context, client *client.Client, pr *client.PR) error {
 	gaelog.Debugf(ctx, "checking if %v can be automerged", pr)
 
 	if pr.GetMerged() || pr.GetState() != "open" {
@@ -106,10 +110,11 @@ func process(ctx context.Context, pr *client.PR) error {
 
 	success := map[string]bool{}
 	for _, s := range status.Statuses {
+		gaelog.Debugf(ctx, "automerge: status %q => %q", s.GetContext(), s.GetState())
 		success[s.GetContext()] = (s.GetState() == "success")
 	}
 
-	for _, req := range requiredChecks {
+	for _, req := range requiredStatuses {
 		if !success[req] {
 			gaelog.Debugf(ctx, "automerge: no, check %q missing or not successful", req)
 			return nil
@@ -121,7 +126,16 @@ func process(ctx context.Context, pr *client.PR) error {
 		return nil
 	}
 
-	ok, err := pr.Mergeable(ctx)
+	ok, err := haveRequiredChecks(ctx, client, pr)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		gaelog.Debugf(ctx, "automerge: no, required checks are missing or unsuccessful")
+		return nil
+	}
+
+	ok, err = pr.Mergeable(ctx)
 	if err != nil {
 		return err
 	}
@@ -134,6 +148,34 @@ func process(ctx context.Context, pr *client.PR) error {
 	title := fmt.Sprintf("Auto-Merge pull request %v from %s/%s", pr, pr.Head.User.GetLogin(), pr.Head.GetRef())
 	msg := fmt.Sprintf("Automatically merged due to %q label", automergeLabel)
 	return pr.Merge(ctx, title, msg)
+}
+
+func haveRequiredChecks(ctx context.Context, client *client.Client, pr *client.PR) (bool, error) {
+	checkRuns, err := client.CheckRuns(ctx, pr.GetHead().GetSHA())
+	if err != nil {
+		return false, err
+	}
+
+	byName := make(map[string]*github.CheckRun)
+	for _, cr := range checkRuns {
+		gaelog.Debugf(ctx, "automerge: Check %q -> %q", cr.GetName(), cr.GetConclusion())
+		byName[cr.GetName()] = cr
+	}
+
+	ret := true
+	for _, name := range requiredChecks {
+		cr, ok := byName[name]
+		if !ok {
+			gaelog.Warningf(ctx, "automerge: Required check %q was not reported by GitHub.", name)
+			ret = false
+		}
+		if cr.GetConclusion() != "success" {
+			gaelog.Debugf(ctx, "automerge: Check %q was not successful", name)
+			ret = false
+		}
+	}
+
+	return ret, nil
 }
 
 func allReviewsFinished(ctx context.Context, pr *client.PR) (bool, error) {
