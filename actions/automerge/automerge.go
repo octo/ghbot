@@ -26,9 +26,46 @@ var requiredChecks = []string{
 }
 
 func init() {
+	event.CheckSuiteHandler("automerge", processCheckSuite)
 	event.PullRequestHandler("automerge", processPullRequestEvent)
 	event.PullRequestReviewHandler("automerge", processReviewEvent)
 	event.StatusHandler("automerge", processStatusEvent)
+}
+
+func processCheckSuite(ctx context.Context, event *github.CheckSuiteEvent) error {
+	if event.GetAction() != "completed" {
+		return nil
+	}
+
+	c, err := client.New(ctx, client.DefaultOwner, client.DefaultRepo)
+	if err != nil {
+		return err
+	}
+
+	// We do *not* check whether the entire check suite was successful,
+	// because we only want to check specific CheckRuns.
+
+	cs := event.GetCheckSuite()
+	for _, pr := range cs.PullRequests {
+		if err := process(ctx, c, c.WrapPR(pr)); err != nil {
+			return err
+		}
+	}
+
+	if len(cs.PullRequests) != 0 {
+		return nil
+	}
+
+	pr, err := c.PullRequestBySHA(ctx, cs.GetHeadSHA())
+	if err == os.ErrNotExist {
+		gaelog.Debugf(ctx, "automerge: no pull request found for %s", cs.GetHeadSHA())
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("PullRequestBySHA(%q): %w", cs.GetHeadSHA(), err)
+	}
+
+	return process(ctx, c, pr)
 }
 
 func processPullRequestEvent(ctx context.Context, event *github.PullRequestEvent) error {
