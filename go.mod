@@ -3,6 +3,7 @@ module github.com/octo/ghbot
 go 1.19
 
 require (
+	bitbucket.org/creachadair/stringset v0.0.12
 	cloud.google.com/go/datastore v1.15.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.14
 	github.com/google/go-github v17.0.0+incompatible
@@ -14,7 +15,6 @@ require (
 )
 
 require (
-	bitbucket.org/creachadair/stringset v0.0.12 // indirect
 	cloud.google.com/go v0.110.8 // indirect
 	cloud.google.com/go/compute v1.23.1 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
