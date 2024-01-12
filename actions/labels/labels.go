@@ -57,6 +57,9 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 
 	relevantLabels := gotLabels.Intersect(requiredLabels)
 	if relevantLabels.Len() == 1 {
+		return c.CreateStatus(ctx, checkName, client.StatusSuccess,
+			fmt.Sprintf("The PR is marked as %q", relevantLabels.Unordered()[0]),
+			detailsURL, ref)
 		return nil
 	}
 
