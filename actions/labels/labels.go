@@ -82,7 +82,14 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 		if err != nil {
 			return err
 		}
-		return issue.AddLabel(ctx, label)
+
+		if err := issue.AddLabel(ctx, label); err != nil {
+			return err
+		}
+
+		return c.CreateStatus(ctx, checkName, client.StatusSuccess,
+			fmt.Sprintf("Guessing this is a %q", label),
+			detailsURL, ref)
 	}
 
 	return c.CreateStatus(ctx, checkName, client.StatusFailure,
