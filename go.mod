@@ -1,6 +1,6 @@
 module github.com/octo/ghbot
 
-go 1.21.5
+go 1.19
 
 require (
 	cloud.google.com/go/datastore v1.15.0
@@ -14,6 +14,7 @@ require (
 )
 
 require (
+	bitbucket.org/creachadair/stringset v0.0.12 // indirect
 	cloud.google.com/go v0.110.8 // indirect
 	cloud.google.com/go/compute v1.23.1 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect

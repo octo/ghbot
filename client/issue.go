@@ -42,3 +42,12 @@ func (i *Issue) Milestone(ctx context.Context, id int) error {
 	}
 	return nil
 }
+
+func (i *Issue) AddLabel(ctx context.Context, label string) error {
+	c := i.client
+	_, _, err := i.client.Issues.AddLabelsToIssue(ctx, c.owner, c.repo, i.GetNumber(), []string{label})
+	if err != nil {
+		return fmt.Errorf("AddLabelsToIssue(#%d, %q): %w", i.GetNumber(), label, err)
+	}
+	return nil
+}
