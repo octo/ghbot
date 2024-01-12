@@ -19,6 +19,7 @@ import (
 	_ "github.com/octo/ghbot/actions/automerge"
 	_ "github.com/octo/ghbot/actions/changelog"
 	_ "github.com/octo/ghbot/actions/format"
+	_ "github.com/octo/ghbot/actions/labels"
 	_ "github.com/octo/ghbot/actions/milestone"
 	_ "github.com/octo/ghbot/actions/newplugin"
 )
