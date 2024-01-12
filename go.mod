@@ -1,6 +1,8 @@
 module github.com/octo/ghbot
 
-go 1.19
+go 1.21.0
+
+toolchain go1.21.6
 
 require (
 	bitbucket.org/creachadair/stringset v0.0.12
