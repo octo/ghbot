@@ -55,14 +55,6 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 		gotLabels.Add(label.GetName())
 	}
 
-	relevantLabels := gotLabels.Intersect(requiredLabels)
-	if relevantLabels.Len() == 1 {
-		return c.CreateStatus(ctx, checkName, client.StatusSuccess,
-			fmt.Sprintf("The PR is marked as %q", relevantLabels.Unordered()[0]),
-			detailsURL, ref)
-		return nil
-	}
-
 	c, err := client.New(ctx, client.DefaultOwner, client.DefaultRepo)
 	if err != nil {
 		return err
@@ -70,6 +62,14 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 
 	pr := c.WrapPR(e.GetPullRequest())
 	ref := pr.Head.GetSHA()
+
+	relevantLabels := gotLabels.Intersect(requiredLabels)
+	if relevantLabels.Len() == 1 {
+		return c.CreateStatus(ctx, checkName, client.StatusSuccess,
+			fmt.Sprintf("The PR is marked as %q", relevantLabels.Unordered()[0]),
+			detailsURL, ref)
+		return nil
+	}
 
 	if relevantLabels.Len() > 1 {
 		return c.CreateStatus(ctx, checkName, client.StatusFailure,
