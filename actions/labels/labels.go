@@ -28,11 +28,11 @@ const (
 
 const (
 	labelFeature  = "Feature"
-	labelBug      = "Bug"
+	labelFix      = "Fix"
 	labelUnlisted = "Unlisted Change"
 )
 
-var requiredLabels = stringset.New(labelBug, labelFeature, labelUnlisted)
+var requiredLabels = stringset.New(labelFix, labelFeature, labelUnlisted)
 
 func init() {
 	event.PullRequestHandler("labels", handler)
@@ -100,7 +100,7 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 func guessLabel(pr *client.PR) (string, bool) {
 	prefixToLabel := map[string]string{
 		"feat":     labelFeature,
-		"fix":      labelBug,
+		"fix":      labelFix,
 		"build":    labelUnlisted,
 		"chore":    labelUnlisted,
 		"ci":       labelUnlisted,
