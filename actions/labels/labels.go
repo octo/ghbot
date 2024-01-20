@@ -27,12 +27,12 @@ const (
 )
 
 const (
-	labelFeature  = "Feature"
-	labelFix      = "Fix"
-	labelUnlisted = "Unlisted Change"
+	labelFeature     = "Feature"
+	labelFix         = "Fix"
+	labelMaintenance = "Maintenance"
 )
 
-var requiredLabels = stringset.New(labelFix, labelFeature, labelUnlisted)
+var requiredLabels = stringset.New(labelFix, labelFeature, labelMaintenance)
 
 func init() {
 	event.PullRequestHandler("labels", handler)
@@ -101,14 +101,14 @@ func guessLabel(pr *client.PR) (string, bool) {
 	prefixToLabel := map[string]string{
 		"feat":     labelFeature,
 		"fix":      labelFix,
-		"build":    labelUnlisted,
-		"chore":    labelUnlisted,
-		"ci":       labelUnlisted,
-		"docs":     labelFeature,
-		"style":    labelUnlisted,
-		"refactor": labelUnlisted,
+		"build":    labelMaintenance,
+		"chore":    labelMaintenance,
+		"ci":       labelMaintenance,
+		"docs":     labelFix,
+		"style":    labelMaintenance,
+		"refactor": labelMaintenance,
 		"perf":     labelFeature,
-		"test":     labelUnlisted,
+		"test":     labelMaintenance,
 	}
 	re := regexp.MustCompile(`^(feat|fix|build|chore|ci|docs|style|refactor|perf|test)\b`)
 

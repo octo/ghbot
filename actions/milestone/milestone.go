@@ -35,7 +35,7 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 	if !strings.HasPrefix(ref, "collectd-") {
 		return nil
 	}
-	v := strings.TrimPrefix(ref, "collectd-")
+	version := strings.TrimPrefix(ref, "collectd-")
 
 	// Only issues report the milestone :(
 	i, err := pr.Issue(ctx)
@@ -53,10 +53,8 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 		return err
 	}
 
-	for title, id := range milestones {
-		if title == v {
-			return i.Milestone(ctx, id)
-		}
+	if id, ok := milestones[version]; ok {
+		return i.Milestone(ctx, id)
 	}
 
 	return nil
