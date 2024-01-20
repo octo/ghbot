@@ -4,7 +4,7 @@
 // single change log entry along the lines of "Foo plugin: Implemented a
 // thing.".
 //
-// For trivial changes, maintainers may set the "Unlisted Change" label which
+// For trivial changes, maintainers may set the "Maintenance" label which
 // allows submission without change log information. If both are present, text
 // and label, label wins out and now change log entry is being created.
 package changelog
@@ -22,9 +22,9 @@ import (
 )
 
 const (
-	checkName     = "ChangeLog"
-	unlistedLabel = "Unlisted Change"
-	detailsURL    = "https://github.com/collectd/collectd/blob/master/docs/CONTRIBUTING.md#changelog"
+	checkName        = "ChangeLog"
+	labelMaintenance = "Maintenance"
+	detailsURL       = "https://github.com/collectd/collectd/blob/master/docs/CONTRIBUTING.md#changelog"
 )
 
 var (
@@ -72,7 +72,7 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 		return err
 	}
 
-	if i.HasLabel(unlistedLabel) {
+	if i.HasLabel(labelMaintenance) {
 		return c.CreateStatus(ctx, checkName, client.StatusSuccess, "Pull request not included in ChangeLog", detailsURL, ref)
 	}
 
