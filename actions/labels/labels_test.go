@@ -14,13 +14,13 @@ func TestGuessLabel(t *testing.T) {
 	}{
 		{"feat: Something new", labelFeature},
 		{"feat(something): New", labelFeature},
-		{"fix: Something broken", labelBug},
+		{"fix: Something broken", labelFix},
 		{"[collectd 6] feat: v6 feature", labelFeature},
 		{"feat: [collectd 6] v6 feature", labelFeature},
-		{"fix: [collectd 6] feat: v6 feature", labelBug},
-		{"chore: Maintenance", labelUnlisted},
+		{"fix: [collectd 6] feat: v6 feature", labelFix},
+		{"chore: Maintenance", labelMaintenance},
 		{"perf: Performance is a feature", labelFeature},
-		{"docs: Documentation is a feature", labelFeature},
+		{"docs: Documentation is a feature", labelFix},
 		{"testing: unknown label", ""},
 	}
 
