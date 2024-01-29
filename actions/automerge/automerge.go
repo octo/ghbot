@@ -132,7 +132,7 @@ func process(ctx context.Context, client *client.Client, pr *client.PR) error {
 		return nil
 	}
 
-	if ok, err := allReviewsFinished(ctx, pr); !ok || err != nil {
+	if ok, err := allReviewsFinished(ctx, client, pr); !ok || err != nil {
 		if err != nil {
 			return err
 		}
@@ -215,44 +215,58 @@ func haveRequiredChecks(ctx context.Context, client *client.Client, pr *client.P
 	return ret, nil
 }
 
-func allReviewsFinished(ctx context.Context, pr *client.PR) (bool, error) {
-	reviews := map[string]string{}
-	for _, u := range pr.RequestedReviewers {
-		name := u.GetLogin()
-		if name == "" {
-			continue
+func allReviewsFinished(ctx context.Context, client *client.Client, pr *client.PR) (bool, error) {
+	var (
+		reviewsOpts github.ListOptions
+		isApproved  bool
+	)
+	for {
+		reviews, resp, err := client.PullRequests.ListReviews(ctx, client.Owner(), client.Repo(), pr.GetNumber(), &reviewsOpts)
+		if err != nil {
+			return false, fmt.Errorf("ListReviews(\"%s/%s#%d\"): %w", client.Owner(), client.Repo(), pr.GetNumber(), err)
 		}
 
-		reviews[name] = "REQUESTED"
+		for _, r := range reviews {
+			gaelog.Debugf(ctx, "automerge: PR #%d: Review by %s is in state %s", pr.GetNumber(), r.GetUser().GetLogin(), r.GetState())
+
+			switch r.GetState() {
+			case "CHANGES_REQUESTED":
+				return false, nil
+			case "APPROVED":
+				isApproved = true
+			}
+		}
+		if resp.NextPage == 0 {
+			break
+		}
+		reviewsOpts.Page = resp.NextPage
 	}
 
-	revs, err := pr.Reviews(ctx)
-	if err != nil {
-		return false, err
+	if !isApproved {
+		gaelog.Debugf(ctx, "automerge: PR #%d: no approved reviews", pr.GetNumber())
+		return false, nil
 	}
 
-	for _, r := range revs {
-		name := r.GetUser().GetLogin()
-		state := r.GetState()
-		if name == "" || state == "" {
-			continue
+	var (
+		commentsOpts  github.PullRequestListCommentsOptions
+		commentsFound bool
+	)
+	for {
+		comments, resp, err := client.PullRequests.ListComments(ctx, client.Owner(), client.Repo(), pr.GetNumber(), &commentsOpts)
+		if err != nil {
+			return false, fmt.Errorf("ListComments(\"%s/%s#%d\"): %w", client.Owner(), client.Repo(), pr.GetNumber(), err)
 		}
 
-		reviews[name] = state
-	}
-
-	// To *enforce* reviews, initialize with:
-	// result := len(reviews) != 0
-
-	result := true
-	for name, state := range reviews {
-		if state == "APPROVED" {
-			gaelog.Debugf(ctx, "Pull request %v approved by %s", pr, name)
-		} else {
-			gaelog.Debugf(ctx, "Review of %v by %s is in state %q", pr, name, state)
-			result = false
+		for _, c := range comments {
+			gaelog.Debugf(ctx, "automerge: PR #%d: Found review comment from %s: %s", pr.GetNumber(), c.GetUser().GetLogin(), c.GetHTMLURL())
+			commentsFound = true
 		}
+
+		if resp.NextPage == 0 {
+			break
+		}
+		reviewsOpts.Page = resp.NextPage
 	}
 
-	return result, nil
+	return !commentsFound, nil
 }

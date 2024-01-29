@@ -58,6 +58,14 @@ func New(ctx context.Context, owner, repo string) (*Client, error) {
 	}, nil
 }
 
+func (c *Client) Owner() string {
+	return c.owner
+}
+
+func (c *Client) Repo() string {
+	return c.repo
+}
+
 func (c *Client) Issue(ctx context.Context, number int) (*Issue, error) {
 	issue, _, err := c.Client.Issues.Get(ctx, c.owner, c.repo, number)
 	if err != nil {
