@@ -31,7 +31,7 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 
 	ref := pr.PullRequest.Base.GetRef()
 
-	// This is likely a PR for the master branch.
+	// This is likely a PR for the main branch.
 	if !strings.HasPrefix(ref, "collectd-") {
 		return nil
 	}
