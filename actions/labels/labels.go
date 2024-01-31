@@ -23,7 +23,7 @@ import (
 
 const (
 	checkName  = "Labels"
-	detailsURL = "https://github.com/collectd/collectd/blob/master/docs/CONTRIBUTING.md#changelog"
+	detailsURL = "https://github.com/collectd/collectd/blob/main/docs/CONTRIBUTING.md#labels"
 )
 
 const (
@@ -68,7 +68,6 @@ func handler(ctx context.Context, e *github.PullRequestEvent) error {
 		return c.CreateStatus(ctx, checkName, client.StatusSuccess,
 			fmt.Sprintf("The PR is marked as %q", relevantLabels.Unordered()[0]),
 			detailsURL, ref)
-		return nil
 	}
 
 	if relevantLabels.Len() > 1 {

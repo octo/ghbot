@@ -24,7 +24,7 @@ import (
 const (
 	checkName        = "ChangeLog"
 	labelMaintenance = "Maintenance"
-	detailsURL       = "https://github.com/collectd/collectd/blob/master/docs/CONTRIBUTING.md#changelog"
+	detailsURL       = "https://github.com/collectd/collectd/blob/main/docs/CONTRIBUTING.md#changelog"
 )
 
 var (
