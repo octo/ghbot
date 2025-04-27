@@ -2,7 +2,7 @@ module github.com/octo/ghbot
 
 go 1.23.0
 
-toolchain go1.23.8
+toolchain go1.24.2
 
 require (
 	bitbucket.org/creachadair/stringset v0.0.12
