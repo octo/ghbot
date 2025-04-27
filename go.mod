@@ -6,7 +6,7 @@ toolchain go1.24.2
 
 require (
 	bitbucket.org/creachadair/stringset v0.0.14
-	cloud.google.com/go/datastore v1.15.0
+	cloud.google.com/go/datastore v1.20.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.14
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/mtraver/gaelog v1.1.4
@@ -17,14 +17,14 @@ require (
 )
 
 require (
-	cloud.google.com/go v0.112.2 // indirect
+	cloud.google.com/go v0.116.0 // indirect
 	cloud.google.com/go/auth v0.16.1 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
 	cloud.google.com/go/compute/metadata v0.6.0 // indirect
-	cloud.google.com/go/logging v1.9.0 // indirect
-	cloud.google.com/go/longrunning v0.5.6 // indirect
-	cloud.google.com/go/monitoring v1.18.0 // indirect
-	cloud.google.com/go/trace v1.10.5 // indirect
+	cloud.google.com/go/logging v1.11.0 // indirect
+	cloud.google.com/go/longrunning v0.6.1 // indirect
+	cloud.google.com/go/monitoring v1.21.1 // indirect
+	cloud.google.com/go/trace v1.11.1 // indirect
 	github.com/aws/aws-sdk-go v1.55.7 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
@@ -51,7 +51,7 @@ require (
 	golang.org/x/text v0.24.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
 	google.golang.org/api v0.230.0 // indirect
-	google.golang.org/genproto v0.0.0-20240213162025-012b6fc9bca9 // indirect
+	google.golang.org/genproto v0.0.0-20241015192408-796eee8c2d53 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250425173222-7b384671a197 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250414145226-207652e42e2e // indirect
 	google.golang.org/grpc v1.72.0 // indirect
