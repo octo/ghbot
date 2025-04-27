@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.23.8
 
 require (
-	bitbucket.org/creachadair/stringset v0.0.12
+	bitbucket.org/creachadair/stringset v0.0.14
 	cloud.google.com/go/datastore v1.15.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.14
 	github.com/google/go-github v17.0.0+incompatible
