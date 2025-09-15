@@ -9,7 +9,7 @@ require (
 	cloud.google.com/go/datastore v1.20.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.14
 	github.com/google/go-github v17.0.0+incompatible
-	github.com/mtraver/gaelog v1.1.4
+	github.com/mtraver/gaelog v1.1.5
 	github.com/octo/retry v1.0.2
 	go.opencensus.io v0.24.0
 	go.uber.org/multierr v1.11.0
