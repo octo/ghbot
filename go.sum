@@ -90,8 +90,8 @@ github.com/jmespath/go-jmespath/internal/testify v1.5.1 h1:shLQSRRSCCPj3f2gpwzGw
 github.com/jmespath/go-jmespath/internal/testify v1.5.1/go.mod h1:L3OGu8Wl2/fWfCI6z80xFu9LTZmf1ZRjMHUOPmWr69U=
 github.com/kylelemons/godebug v1.1.0 h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=
 github.com/kylelemons/godebug v1.1.0/go.mod h1:9/0rRGxNHcop5bhtWyNeEfOS8JIWk580+fNqagV/RAw=
-github.com/mtraver/gaelog v1.1.4 h1:4dhDpxkaSWKtL1ByfSsAGEx5C8BnYLRAWFEgpPn5ZD8=
-github.com/mtraver/gaelog v1.1.4/go.mod h1:WfY8iMY6H8dWDbmTysF2hJlKrztBhfK76+lcymyOon0=
+github.com/mtraver/gaelog v1.1.5 h1:pbKsPuSDFOtUayEV1airswv1+iN3G8Txy6XpvRTtoX4=
+github.com/mtraver/gaelog v1.1.5/go.mod h1:0oQ90JwNO5lLZbGL/vaDpnWKHMcRY/f7aTwHqqODE3g=
 github.com/octo/retry v1.0.2 h1:5o45XWFVGu19y0AhfhbKjsixDBJAsH4IfGZCrcCWe40=
 github.com/octo/retry v1.0.2/go.mod h1:PPaDliRu6jceWj8do6YDFiaS+ldHHb2EAN0Hx7LF+x0=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
