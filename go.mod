@@ -6,7 +6,7 @@ toolchain go1.24.6
 
 require (
 	bitbucket.org/creachadair/stringset v0.0.14
-	cloud.google.com/go/datastore v1.20.0
+	cloud.google.com/go/datastore v1.21.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.14
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/mtraver/gaelog v1.1.5
