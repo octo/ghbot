@@ -1,8 +1,8 @@
 module github.com/octo/ghbot
 
-go 1.24.0
+go 1.24.9
 
-toolchain go1.24.6
+toolchain go1.24.11
 
 require (
 	bitbucket.org/creachadair/stringset v0.0.14
@@ -38,7 +38,7 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.3.7 // indirect
 	github.com/googleapis/gax-go/v2 v2.15.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	github.com/prometheus/prometheus v0.308.1 // indirect
+	github.com/prometheus/prometheus v0.309.1 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.64.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.64.0 // indirect
