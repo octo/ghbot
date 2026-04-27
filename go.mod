@@ -22,7 +22,7 @@ require (
 	cloud.google.com/go/logging v1.15.0 // indirect
 	cloud.google.com/go/longrunning v0.10.0 // indirect
 	cloud.google.com/go/monitoring v1.26.0 // indirect
-	cloud.google.com/go/trace v1.13.0 // indirect
+	cloud.google.com/go/trace v1.14.0 // indirect
 	github.com/aws/aws-sdk-go v1.55.8 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
