@@ -19,7 +19,7 @@ require (
 	cloud.google.com/go/auth v0.19.0 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
 	cloud.google.com/go/compute/metadata v0.9.0 // indirect
-	cloud.google.com/go/logging v1.15.0 // indirect
+	cloud.google.com/go/logging v1.16.0 // indirect
 	cloud.google.com/go/longrunning v0.10.0 // indirect
 	cloud.google.com/go/monitoring v1.26.0 // indirect
 	cloud.google.com/go/trace v1.13.0 // indirect
