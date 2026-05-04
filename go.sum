@@ -17,8 +17,8 @@ cloud.google.com/go/logging v1.17.0 h1:rUFekZYwHiKElXCyz3zYBGz4BOeIqzgCKxVLdgrZ5
 cloud.google.com/go/logging v1.17.0/go.mod h1:ZGKnpBaURITh+g/uom2VhbiFoFWvejcrHPDhxFtU/gI=
 cloud.google.com/go/longrunning v0.11.0 h1:fE4XVLJQj+gRnw1HrbDyQXXgC0aiqY3wxP7DDU4cWk0=
 cloud.google.com/go/longrunning v0.11.0/go.mod h1:8nqFBPOO1U/XkhWl0I19AMZEphrHi73VNABIpKYaTwM=
-cloud.google.com/go/monitoring v1.27.0 h1:BhYwMqao+e5Nn7JtWMM9m6zRtKtVUK6kJWMizXChkLU=
-cloud.google.com/go/monitoring v1.27.0/go.mod h1:72NOVjJXHY/HBfoLT0+qlCZBT059+9VXLeAnL2PeeVM=
+cloud.google.com/go/monitoring v1.28.0 h1:jOe0Wkm+a56ptZnEeyHevXo7+KPWAPPP5wUTEJdP7GY=
+cloud.google.com/go/monitoring v1.28.0/go.mod h1:72NOVjJXHY/HBfoLT0+qlCZBT059+9VXLeAnL2PeeVM=
 cloud.google.com/go/trace v1.14.0 h1:jUtnmOrNcu5XJNk4Gz0fv+v5sM0weaOa3z5MPQUjRXs=
 cloud.google.com/go/trace v1.14.0/go.mod h1:r+bdAn16dKLSV1G2D5v3e58IlQlizfxWrUfjx7kM7X0=
 contrib.go.opencensus.io/exporter/stackdriver v0.13.14 h1:zBakwHardp9Jcb8sQHcHpXy/0+JIb1M8KjigCJzx7+4=
