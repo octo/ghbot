@@ -4,7 +4,7 @@ go 1.25.5
 
 require (
 	bitbucket.org/creachadair/stringset v0.0.14
-	cloud.google.com/go/datastore v1.22.0
+	cloud.google.com/go/datastore v1.23.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.14
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/mtraver/gaelog v1.1.6
