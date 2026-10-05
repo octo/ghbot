@@ -13,8 +13,8 @@ cloud.google.com/go/datastore v1.27.0 h1:JcnNVNNpEkZAkPd6x+GK8XyHoGIwq40Fl3+s+17
 cloud.google.com/go/datastore v1.27.0/go.mod h1:nWk/77Jm6IFzMBpaVtThPKHp5SmBRLThUQLDOQdS8sk=
 cloud.google.com/go/iam v1.12.0 h1:Aki3bX9aHUDKPHfnRJfDcTdVedvy6quGBQcTqx3DRXk=
 cloud.google.com/go/iam v1.12.0/go.mod h1:FEZ4lXpADAC2AIpQY7LANNjjwyQ2jK439CI2VaD+sLY=
-cloud.google.com/go/logging v1.19.1 h1:7SsLhyTDBDrJw+Ll6Ns3I2mByqHXvJUc3rGjSlwiWgU=
-cloud.google.com/go/logging v1.19.1/go.mod h1:2IkQ/d8jVJqV2qW8ZUGUiMjdZG1gkLD2JReGbZ8isqg=
+cloud.google.com/go/logging v1.20.0 h1:l7yzCB8/JSY5PHT9RsaqdT1jaBGbM6KlSJDX210HlXM=
+cloud.google.com/go/logging v1.20.0/go.mod h1:ALUaJQZM691Eeujy9kFx0xREq3AMPuGd+pTRZuTYv+w=
 cloud.google.com/go/longrunning v1.3.0 h1:lZ6c8SJJBmILp/Wnr3vGnBLa0q+cYfSHRCcUfVI2hpI=
 cloud.google.com/go/longrunning v1.3.0/go.mod h1:wpgLxCn+UA3/TZ1bj/fW39mfDpwVlMPu1xKJyoMt7V0=
 cloud.google.com/go/monitoring v1.31.0 h1:LCuAoYiq8snyL/eDAG/VC73uWFXeax8+YEfmoNGJUrY=
