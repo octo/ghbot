@@ -1,6 +1,6 @@
 module github.com/octo/ghbot
 
-go 1.26.0
+go 1.26.7
 
 require (
 	bitbucket.org/creachadair/stringset v0.0.14
@@ -36,7 +36,7 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.3.24 // indirect
 	github.com/googleapis/gax-go/v2 v2.26.2 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	github.com/prometheus/prometheus v0.315.1 // indirect
+	github.com/prometheus/prometheus v0.316.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.72.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.72.0 // indirect
@@ -50,7 +50,7 @@ require (
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
 	golang.org/x/time v0.16.0 // indirect
-	google.golang.org/api v0.304.0 // indirect
+	google.golang.org/api v0.305.0 // indirect
 	google.golang.org/genproto v0.0.0-20260729162451-8efbd57d26e0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20261019180522-ce908d29299b // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20261026165753-2ffab32bce7e // indirect
