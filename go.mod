@@ -8,7 +8,7 @@ require (
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.14
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/mtraver/gaelog v1.1.6
-	github.com/octo/retry v1.0.2
+	github.com/octo/retry v1.2.0
 	go.opencensus.io v0.24.0
 	go.uber.org/multierr v1.11.0
 	golang.org/x/oauth2 v0.37.0

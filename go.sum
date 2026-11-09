@@ -101,8 +101,8 @@ github.com/kylelemons/godebug v1.1.0 h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0
 github.com/kylelemons/godebug v1.1.0/go.mod h1:9/0rRGxNHcop5bhtWyNeEfOS8JIWk580+fNqagV/RAw=
 github.com/mtraver/gaelog v1.1.6 h1:Lqjn6HalyVqqlJARDzO7xz0sRQ1JYO75kU2DBNYx02E=
 github.com/mtraver/gaelog v1.1.6/go.mod h1:dGGGZq7zO33894EY73Tcm4CwgRvC5fc/Nn7sq8R/gEA=
-github.com/octo/retry v1.0.2 h1:5o45XWFVGu19y0AhfhbKjsixDBJAsH4IfGZCrcCWe40=
-github.com/octo/retry v1.0.2/go.mod h1:PPaDliRu6jceWj8do6YDFiaS+ldHHb2EAN0Hx7LF+x0=
+github.com/octo/retry v1.2.0 h1:0V1pGfcABVAj9PZtIJ8O7k2Bc+JYTscXwfem0wZNT84=
+github.com/octo/retry v1.2.0/go.mod h1:PPaDliRu6jceWj8do6YDFiaS+ldHHb2EAN0Hx7LF+x0=
 github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 h1:GFCKgmp0tecUJ0sJuv4pzYCqS9+RGSn52M3FUwPs+uo=
 github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10/go.mod h1:t/avpk3KcrXxUnYOhZhMXJlSEyie6gQbtLq5NM3loB8=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
