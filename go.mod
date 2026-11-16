@@ -11,7 +11,7 @@ require (
 	github.com/octo/retry v1.2.0
 	go.opencensus.io v0.24.0
 	go.uber.org/multierr v1.11.0
-	golang.org/x/oauth2 v0.37.0
+	golang.org/x/oauth2 v0.38.0
 )
 
 require (
